@@ -1,0 +1,2986 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FlameGuard AI API",
+    "description": "\nFlameGuard AI turns NASA's FLEX microgravity droplet-combustion experiments (ISS, 2009-2011) into\nfire-safety insight.\n\nEvery response states its **provenance**: `observed` (NASA measurement), `prediction` (trained model),\n`estimate` (statistical summary of observed tests), `explanation` (Shapley attribution),\n`interpretation` (template text from model outputs), `hypothetical` (user-set conditions) or\n`evaluation` (cross-validated performance).\n\nResearch prototype for the NASA Space Apps Challenge 2026 — not a certified fire-safety system.\n",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Service health and loaded model",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stats": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Dataset counts and headline model performance",
+        "operationId": "stats_api_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sources": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "NASA sources behind the data",
+        "operationId": "sources_api_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Source"
+                  },
+                  "type": "array",
+                  "title": "Response Sources Api Sources Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/domain": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Tested input ranges per fuel (for UI controls)",
+        "operationId": "domain_api_domain_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/model": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Model card: metrics, calibration, bands, limits",
+        "operationId": "model_api_model_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experiments": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "summary": "Observed FLEX tests with filters",
+        "operationId": "list_experiments_api_experiments_get",
+        "parameters": [
+          {
+            "name": "fuel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Fuel"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Fuel"
+            }
+          },
+          {
+            "name": "suppressant",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Suppressant"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Suppressant"
+            }
+          },
+          {
+            "name": "pressure_level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "0.7atm",
+                    "1atm",
+                    "2-3atm"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pressure Level"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "Extinction",
+                    "Completion",
+                    "Disruption"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Outcome"
+            }
+          },
+          {
+            "name": "in_model_scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "In Model Scope"
+            }
+          },
+          {
+            "name": "oxygen_min",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 100,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Oxygen Min"
+            }
+          },
+          {
+            "name": "oxygen_max",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 100,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Oxygen Max"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "FLEX identifier fragment or exact test number",
+              "title": "Search"
+            },
+            "description": "FLEX identifier fragment or exact test number"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "test_id",
+                "-test_id",
+                "oxygen",
+                "-oxygen",
+                "risk",
+                "-risk",
+                "date",
+                "-date"
+              ],
+              "type": "string",
+              "default": "test_id",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 300,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experiments/{test_id}": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "summary": "One FLEX test with source and notes",
+        "operationId": "get_experiment_api_experiments__test_id__get",
+        "parameters": [
+          {
+            "name": "test_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Test Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/predict": {
+      "post": {
+        "tags": [
+          "predictions"
+        ],
+        "summary": "Fire Risk with evidence and explanation",
+        "operationId": "predict_api_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Conditions"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/what-if": {
+      "post": {
+        "tags": [
+          "predictions"
+        ],
+        "summary": "Compare two hypothetical scenarios",
+        "operationId": "what_if_api_what_if_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WhatIfRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatIfResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ranking": {
+      "get": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Rank FLEX tests by predicted risk or burn time",
+        "operationId": "ranking_api_ranking_get",
+        "parameters": [
+          {
+            "name": "by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "risk",
+                "lowest_risk",
+                "extinction",
+                "burn_time"
+              ],
+              "type": "string",
+              "default": "risk",
+              "title": "By"
+            }
+          },
+          {
+            "name": "fuel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Fuel"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Fuel"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 274,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ranking/conditions": {
+      "get": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Rank tested atmospheres by observed sustained-combustion rate",
+        "operationId": "condition_ranking_api_ranking_conditions_get",
+        "parameters": [
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "desc",
+                "asc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Order"
+            }
+          },
+          {
+            "name": "min_tests",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 3,
+              "title": "Min Tests"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 15,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConditionRankingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suppressants": {
+      "get": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Suppressant comparison from observed tests (no ML model)",
+        "operationId": "suppressants_api_suppressants_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuppressantsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/similar-experiments": {
+      "post": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Nearest tested FLEX conditions",
+        "operationId": "similar_api_similar_experiments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimilarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimilarResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BandEvidence": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "evaluation"
+          },
+          "level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "tests": {
+            "type": "integer",
+            "title": "Tests"
+          },
+          "observed_sustained_rate": {
+            "type": "number",
+            "title": "Observed Sustained Rate"
+          },
+          "ci_low": {
+            "type": "number",
+            "title": "Ci Low"
+          },
+          "ci_high": {
+            "type": "number",
+            "title": "Ci High"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "tests",
+          "observed_sustained_rate",
+          "ci_low",
+          "ci_high"
+        ],
+        "title": "BandEvidence"
+      },
+      "BandRow": {
+        "properties": {
+          "level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "score_from": {
+            "type": "number",
+            "title": "Score From"
+          },
+          "score_to": {
+            "type": "number",
+            "title": "Score To"
+          },
+          "tests": {
+            "type": "integer",
+            "title": "Tests"
+          },
+          "sustained": {
+            "type": "integer",
+            "title": "Sustained"
+          },
+          "observed_sustained_rate": {
+            "type": "number",
+            "title": "Observed Sustained Rate"
+          },
+          "ci_low": {
+            "type": "number",
+            "title": "Ci Low"
+          },
+          "ci_high": {
+            "type": "number",
+            "title": "Ci High"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "score_from",
+          "score_to",
+          "tests",
+          "sustained",
+          "observed_sustained_rate",
+          "ci_low",
+          "ci_high"
+        ],
+        "title": "BandRow"
+      },
+      "CalibrationBin": {
+        "properties": {
+          "mean_predicted": {
+            "type": "number",
+            "title": "Mean Predicted"
+          },
+          "observed_rate": {
+            "type": "number",
+            "title": "Observed Rate"
+          },
+          "ci_low": {
+            "type": "number",
+            "title": "Ci Low"
+          },
+          "ci_high": {
+            "type": "number",
+            "title": "Ci High"
+          },
+          "tests": {
+            "type": "integer",
+            "title": "Tests"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mean_predicted",
+          "observed_rate",
+          "ci_low",
+          "ci_high",
+          "tests"
+        ],
+        "title": "CalibrationBin"
+      },
+      "ConditionRank": {
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "fuel": {
+            "$ref": "#/components/schemas/Fuel"
+          },
+          "pressure_level": {
+            "type": "string",
+            "title": "Pressure Level"
+          },
+          "suppressant": {
+            "type": "string",
+            "title": "Suppressant"
+          },
+          "oxygen_percent": {
+            "type": "number",
+            "title": "Oxygen Percent"
+          },
+          "co2_percent": {
+            "type": "number",
+            "title": "Co2 Percent"
+          },
+          "he_percent": {
+            "type": "number",
+            "title": "He Percent"
+          },
+          "tests": {
+            "type": "integer",
+            "title": "Tests"
+          },
+          "sustained": {
+            "type": "integer",
+            "title": "Sustained"
+          },
+          "observed_rate": {
+            "type": "number",
+            "title": "Observed Rate"
+          },
+          "ci_low": {
+            "type": "number",
+            "title": "Ci Low"
+          },
+          "ci_high": {
+            "type": "number",
+            "title": "Ci High"
+          },
+          "test_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Test Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rank",
+          "fuel",
+          "pressure_level",
+          "suppressant",
+          "oxygen_percent",
+          "co2_percent",
+          "he_percent",
+          "tests",
+          "sustained",
+          "observed_rate",
+          "ci_low",
+          "ci_high",
+          "test_ids"
+        ],
+        "title": "ConditionRank"
+      },
+      "ConditionRankingResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "observed"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ConditionRank"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "items"
+        ],
+        "title": "ConditionRankingResponse"
+      },
+      "Conditions": {
+        "properties": {
+          "fuel": {
+            "$ref": "#/components/schemas/Fuel"
+          },
+          "oxygen_percent": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Oxygen Percent",
+            "description": "O2 mole fraction in percent (air = 21)."
+          },
+          "suppressant": {
+            "$ref": "#/components/schemas/Suppressant",
+            "description": "Added diluent gas; 'none' = O2/N2 only.",
+            "default": "none"
+          },
+          "suppressant_percent": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Suppressant Percent",
+            "description": "Suppressant mole fraction in percent.",
+            "default": 0.0
+          },
+          "droplet_diameter_mm": {
+            "type": "number",
+            "maximum": 10.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Droplet Diameter Mm",
+            "description": "Initial droplet diameter in mm."
+          }
+        },
+        "type": "object",
+        "required": [
+          "fuel",
+          "oxygen_percent",
+          "droplet_diameter_mm"
+        ],
+        "title": "Conditions",
+        "description": "Conditions a user can set. These are exactly the final model's inputs; pressure, temperature\nand airflow are not inputs (FLEX: quiescent, ambient temperature; pressure dropped, decision D-001).",
+        "example": {
+          "droplet_diameter_mm": 3.0,
+          "fuel": "Methanol",
+          "oxygen_percent": 21,
+          "suppressant": "CO2",
+          "suppressant_percent": 10
+        }
+      },
+      "Contribution": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "fuel",
+              "atmosphere",
+              "droplet_size"
+            ],
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "impact": {
+            "type": "number",
+            "title": "Impact",
+            "description": "Fire Risk points relative to the average FLEX test"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "raises",
+              "lowers",
+              "neutral"
+            ],
+            "title": "Direction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "impact",
+          "direction"
+        ],
+        "title": "Contribution"
+      },
+      "DomainResponse": {
+        "properties": {
+          "fuels": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FuelDomain"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/Fuel"
+            },
+            "type": "object",
+            "title": "Fuels"
+          },
+          "pressure_scope_atm": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Pressure Scope Atm"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fuels",
+          "pressure_scope_atm",
+          "notes"
+        ],
+        "title": "DomainResponse"
+      },
+      "Evidence": {
+        "properties": {
+          "in_tested_range": {
+            "type": "boolean",
+            "title": "In Tested Range"
+          },
+          "supported_by_data": {
+            "type": "boolean",
+            "title": "Supported By Data",
+            "description": "Close to a tested FLEX condition (not an extrapolation)"
+          },
+          "nearest_tested_distance": {
+            "type": "number",
+            "title": "Nearest Tested Distance"
+          },
+          "support_radius": {
+            "type": "number",
+            "title": "Support Radius"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "band": {
+            "$ref": "#/components/schemas/BandEvidence"
+          },
+          "nearest_experiment_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Nearest Experiment Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "in_tested_range",
+          "supported_by_data",
+          "nearest_tested_distance",
+          "support_radius",
+          "warnings",
+          "band",
+          "nearest_experiment_ids"
+        ],
+        "title": "Evidence"
+      },
+      "ExperimentCounts": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "All FLEX tests in NASA PSI-69"
+          },
+          "in_model_scope": {
+            "type": "integer",
+            "title": "In Model Scope",
+            "description": "Tests used to train the model (0.7-1 atm, complete inputs)"
+          },
+          "extinction": {
+            "type": "integer",
+            "title": "Extinction"
+          },
+          "completion": {
+            "type": "integer",
+            "title": "Completion"
+          },
+          "disruption": {
+            "type": "integer",
+            "title": "Disruption"
+          },
+          "sustained": {
+            "type": "integer",
+            "title": "Sustained",
+            "description": "Completion + disruption"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "in_model_scope",
+          "extinction",
+          "completion",
+          "disruption",
+          "sustained"
+        ],
+        "title": "ExperimentCounts"
+      },
+      "ExperimentDetail": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "observed"
+          },
+          "test_id": {
+            "type": "integer",
+            "title": "Test Id"
+          },
+          "flex_identifier": {
+            "type": "string",
+            "title": "Flex Identifier"
+          },
+          "datetime_gmt": {
+            "type": "string",
+            "title": "Datetime Gmt"
+          },
+          "fuel": {
+            "$ref": "#/components/schemas/Fuel"
+          },
+          "pressure_atm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pressure Atm"
+          },
+          "pressure_level": {
+            "type": "string",
+            "title": "Pressure Level"
+          },
+          "oxygen_percent": {
+            "type": "number",
+            "title": "Oxygen Percent"
+          },
+          "nitrogen_percent": {
+            "type": "number",
+            "title": "Nitrogen Percent"
+          },
+          "co2_percent": {
+            "type": "number",
+            "title": "Co2 Percent"
+          },
+          "he_percent": {
+            "type": "number",
+            "title": "He Percent"
+          },
+          "suppressant": {
+            "type": "string",
+            "title": "Suppressant"
+          },
+          "droplet_diameter_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Droplet Diameter Mm"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "Extinction",
+              "Completion",
+              "Disruption"
+            ],
+            "title": "Outcome"
+          },
+          "sustained": {
+            "type": "boolean",
+            "title": "Sustained"
+          },
+          "burn_time_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Burn Time S"
+          },
+          "qc_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Qc Flags"
+          },
+          "in_model_scope": {
+            "type": "boolean",
+            "title": "In Model Scope"
+          },
+          "prediction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OutOfFoldPrediction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "extinction_diameter_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extinction Diameter Mm"
+          },
+          "burning_rate_mm2_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Burning Rate Mm2 S"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "test_id",
+          "flex_identifier",
+          "datetime_gmt",
+          "fuel",
+          "pressure_atm",
+          "pressure_level",
+          "oxygen_percent",
+          "nitrogen_percent",
+          "co2_percent",
+          "he_percent",
+          "suppressant",
+          "droplet_diameter_mm",
+          "outcome",
+          "sustained",
+          "burn_time_s",
+          "qc_flags",
+          "in_model_scope",
+          "prediction",
+          "source_id",
+          "extinction_diameter_mm",
+          "burning_rate_mm2_s",
+          "source",
+          "notes"
+        ],
+        "title": "ExperimentDetail"
+      },
+      "ExperimentList": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ],
+        "title": "ExperimentList"
+      },
+      "ExperimentSummary": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "observed"
+          },
+          "test_id": {
+            "type": "integer",
+            "title": "Test Id"
+          },
+          "flex_identifier": {
+            "type": "string",
+            "title": "Flex Identifier"
+          },
+          "datetime_gmt": {
+            "type": "string",
+            "title": "Datetime Gmt"
+          },
+          "fuel": {
+            "$ref": "#/components/schemas/Fuel"
+          },
+          "pressure_atm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pressure Atm"
+          },
+          "pressure_level": {
+            "type": "string",
+            "title": "Pressure Level"
+          },
+          "oxygen_percent": {
+            "type": "number",
+            "title": "Oxygen Percent"
+          },
+          "nitrogen_percent": {
+            "type": "number",
+            "title": "Nitrogen Percent"
+          },
+          "co2_percent": {
+            "type": "number",
+            "title": "Co2 Percent"
+          },
+          "he_percent": {
+            "type": "number",
+            "title": "He Percent"
+          },
+          "suppressant": {
+            "type": "string",
+            "title": "Suppressant"
+          },
+          "droplet_diameter_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Droplet Diameter Mm"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "Extinction",
+              "Completion",
+              "Disruption"
+            ],
+            "title": "Outcome"
+          },
+          "sustained": {
+            "type": "boolean",
+            "title": "Sustained"
+          },
+          "burn_time_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Burn Time S"
+          },
+          "qc_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Qc Flags"
+          },
+          "in_model_scope": {
+            "type": "boolean",
+            "title": "In Model Scope"
+          },
+          "prediction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OutOfFoldPrediction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "test_id",
+          "flex_identifier",
+          "datetime_gmt",
+          "fuel",
+          "pressure_atm",
+          "pressure_level",
+          "oxygen_percent",
+          "nitrogen_percent",
+          "co2_percent",
+          "he_percent",
+          "suppressant",
+          "droplet_diameter_mm",
+          "outcome",
+          "sustained",
+          "burn_time_s",
+          "qc_flags",
+          "in_model_scope",
+          "prediction",
+          "source_id"
+        ],
+        "title": "ExperimentSummary"
+      },
+      "Explanation": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "explanation"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "base_value": {
+            "type": "number",
+            "title": "Base Value",
+            "description": "Average Fire Risk over the training tests"
+          },
+          "contributions": {
+            "items": {
+              "$ref": "#/components/schemas/Contribution"
+            },
+            "type": "array",
+            "title": "Contributions"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "base_value",
+          "contributions",
+          "note"
+        ],
+        "title": "Explanation"
+      },
+      "Fuel": {
+        "type": "string",
+        "enum": [
+          "Methanol",
+          "Heptane"
+        ],
+        "title": "Fuel"
+      },
+      "FuelDomain": {
+        "properties": {
+          "oxygen_percent": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Oxygen Percent"
+          },
+          "co2_percent": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Co2 Percent"
+          },
+          "he_percent": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "He Percent"
+          },
+          "droplet_diameter_mm": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Droplet Diameter Mm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "oxygen_percent",
+          "co2_percent",
+          "he_percent",
+          "droplet_diameter_mm"
+        ],
+        "title": "FuelDomain"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "api_version": {
+            "type": "string",
+            "title": "Api Version"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "training_tests": {
+            "type": "integer",
+            "title": "Training Tests"
+          },
+          "data_sha256": {
+            "type": "string",
+            "title": "Data Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "api_version",
+          "model",
+          "training_tests",
+          "data_sha256"
+        ],
+        "title": "HealthResponse"
+      },
+      "ImportanceRow": {
+        "properties": {
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "mean_abs_points": {
+            "type": "number",
+            "title": "Mean Abs Points"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          }
+        },
+        "type": "object",
+        "required": [
+          "player",
+          "mean_abs_points",
+          "share"
+        ],
+        "title": "ImportanceRow"
+      },
+      "Interpretation": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "interpretation"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "default": "Fixed template filled from the model outputs (no language model)"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "Interpretation"
+      },
+      "MetricWithInterval": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "nested_mean": {
+            "type": "number",
+            "title": "Nested Mean"
+          },
+          "nested_sd": {
+            "type": "number",
+            "title": "Nested Sd"
+          },
+          "pooled_estimate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pooled Estimate"
+          },
+          "pooled_ci_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pooled Ci Low"
+          },
+          "pooled_ci_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pooled Ci High"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "nested_mean",
+          "nested_sd",
+          "pooled_estimate",
+          "pooled_ci_low",
+          "pooled_ci_high"
+        ],
+        "title": "MetricWithInterval"
+      },
+      "ModelInfoResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "evaluation"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Features"
+          },
+          "standardised_coefficients": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Standardised Coefficients"
+          },
+          "training_tests": {
+            "type": "integer",
+            "title": "Training Tests"
+          },
+          "training_sustained": {
+            "type": "integer",
+            "title": "Training Sustained"
+          },
+          "validation": {
+            "type": "string",
+            "title": "Validation"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/MetricWithInterval"
+            },
+            "type": "array",
+            "title": "Metrics"
+          },
+          "calibration": {
+            "items": {
+              "$ref": "#/components/schemas/CalibrationBin"
+            },
+            "type": "array",
+            "title": "Calibration"
+          },
+          "bands": {
+            "items": {
+              "$ref": "#/components/schemas/BandRow"
+            },
+            "type": "array",
+            "title": "Bands"
+          },
+          "subgroups": {
+            "items": {
+              "$ref": "#/components/schemas/SubgroupRow"
+            },
+            "type": "array",
+            "title": "Subgroups"
+          },
+          "global_importance": {
+            "items": {
+              "$ref": "#/components/schemas/ImportanceRow"
+            },
+            "type": "array",
+            "title": "Global Importance"
+          },
+          "consistently_missed_test_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Consistently Missed Test Ids"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "features",
+          "standardised_coefficients",
+          "training_tests",
+          "training_sustained",
+          "validation",
+          "metrics",
+          "calibration",
+          "bands",
+          "subgroups",
+          "global_importance",
+          "consistently_missed_test_ids",
+          "limitations"
+        ],
+        "title": "ModelInfoResponse"
+      },
+      "ModelSummary": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "evaluation"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "validation": {
+            "type": "string",
+            "title": "Validation"
+          },
+          "roc_auc": {
+            "type": "number",
+            "title": "Roc Auc"
+          },
+          "roc_auc_sd": {
+            "type": "number",
+            "title": "Roc Auc Sd"
+          },
+          "pr_auc": {
+            "type": "number",
+            "title": "Pr Auc"
+          },
+          "brier": {
+            "type": "number",
+            "title": "Brier"
+          },
+          "recall_at_alert": {
+            "type": "number",
+            "title": "Recall At Alert"
+          },
+          "precision_at_alert": {
+            "type": "number",
+            "title": "Precision At Alert"
+          },
+          "calibration_slope_min": {
+            "type": "number",
+            "title": "Calibration Slope Min"
+          },
+          "calibration_slope_max": {
+            "type": "number",
+            "title": "Calibration Slope Max"
+          },
+          "alert_threshold_score": {
+            "type": "number",
+            "title": "Alert Threshold Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "validation",
+          "roc_auc",
+          "roc_auc_sd",
+          "pr_auc",
+          "brier",
+          "recall_at_alert",
+          "precision_at_alert",
+          "calibration_slope_min",
+          "calibration_slope_max",
+          "alert_threshold_score"
+        ],
+        "title": "ModelSummary"
+      },
+      "ObservedPoint": {
+        "properties": {
+          "test_id": {
+            "type": "integer",
+            "title": "Test Id"
+          },
+          "fuel": {
+            "$ref": "#/components/schemas/Fuel"
+          },
+          "pressure_level": {
+            "type": "string",
+            "title": "Pressure Level"
+          },
+          "suppressant": {
+            "type": "string",
+            "title": "Suppressant"
+          },
+          "oxygen_percent": {
+            "type": "number",
+            "title": "Oxygen Percent"
+          },
+          "co2_percent": {
+            "type": "number",
+            "title": "Co2 Percent"
+          },
+          "he_percent": {
+            "type": "number",
+            "title": "He Percent"
+          },
+          "droplet_diameter_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Droplet Diameter Mm"
+          },
+          "outcome": {
+            "type": "string",
+            "title": "Outcome"
+          },
+          "sustained": {
+            "type": "boolean",
+            "title": "Sustained"
+          }
+        },
+        "type": "object",
+        "required": [
+          "test_id",
+          "fuel",
+          "pressure_level",
+          "suppressant",
+          "oxygen_percent",
+          "co2_percent",
+          "he_percent",
+          "droplet_diameter_mm",
+          "outcome",
+          "sustained"
+        ],
+        "title": "ObservedPoint"
+      },
+      "OutOfFoldPrediction": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "prediction"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "default": "Out-of-fold: predicted by models that never saw this test (mean of 5 CV repeats)"
+          },
+          "fire_risk": {
+            "type": "number",
+            "title": "Fire Risk"
+          },
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "sustained_probability": {
+            "type": "number",
+            "title": "Sustained Probability"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fire_risk",
+          "risk_level",
+          "sustained_probability"
+        ],
+        "title": "OutOfFoldPrediction"
+      },
+      "PathStep": {
+        "properties": {
+          "step": {
+            "type": "string",
+            "title": "Step"
+          },
+          "change": {
+            "type": "string",
+            "title": "Change"
+          },
+          "fire_risk": {
+            "type": "number",
+            "title": "Fire Risk"
+          },
+          "delta": {
+            "type": "number",
+            "title": "Delta"
+          },
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "supported": {
+            "type": "boolean",
+            "title": "Supported"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step",
+          "change",
+          "fire_risk",
+          "delta",
+          "risk_level",
+          "supported"
+        ],
+        "title": "PathStep"
+      },
+      "PredictResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "prediction"
+          },
+          "conditions": {
+            "$ref": "#/components/schemas/Conditions"
+          },
+          "fire_risk": {
+            "type": "number",
+            "title": "Fire Risk"
+          },
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "sustained_probability": {
+            "type": "number",
+            "title": "Sustained Probability"
+          },
+          "extinction_probability": {
+            "type": "number",
+            "title": "Extinction Probability"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          },
+          "explanation": {
+            "$ref": "#/components/schemas/Explanation"
+          },
+          "interpretation": {
+            "$ref": "#/components/schemas/Interpretation"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          }
+        },
+        "type": "object",
+        "required": [
+          "conditions",
+          "fire_risk",
+          "risk_level",
+          "sustained_probability",
+          "extinction_probability",
+          "evidence",
+          "explanation",
+          "interpretation",
+          "model",
+          "scope"
+        ],
+        "title": "PredictResponse"
+      },
+      "Provenance": {
+        "type": "string",
+        "enum": [
+          "observed",
+          "prediction",
+          "estimate",
+          "explanation",
+          "interpretation",
+          "hypothetical",
+          "evaluation"
+        ],
+        "title": "Provenance"
+      },
+      "RankingItem": {
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "experiment": {
+            "$ref": "#/components/schemas/ExperimentSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rank",
+          "value",
+          "experiment"
+        ],
+        "title": "RankingItem"
+      },
+      "RankingResponse": {
+        "properties": {
+          "by": {
+            "type": "string",
+            "title": "By"
+          },
+          "metric_label": {
+            "type": "string",
+            "title": "Metric Label"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RankingItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "by",
+          "metric_label",
+          "provenance",
+          "method",
+          "items"
+        ],
+        "title": "RankingResponse"
+      },
+      "RiskLevel": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "ELEVATED",
+          "HIGH"
+        ],
+        "title": "RiskLevel"
+      },
+      "ScenarioResult": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "prediction"
+          },
+          "conditions": {
+            "$ref": "#/components/schemas/Conditions"
+          },
+          "fire_risk": {
+            "type": "number",
+            "title": "Fire Risk"
+          },
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "sustained_probability": {
+            "type": "number",
+            "title": "Sustained Probability"
+          },
+          "supported_by_data": {
+            "type": "boolean",
+            "title": "Supported By Data"
+          },
+          "in_tested_range": {
+            "type": "boolean",
+            "title": "In Tested Range"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "conditions",
+          "fire_risk",
+          "risk_level",
+          "sustained_probability",
+          "supported_by_data",
+          "in_tested_range",
+          "warnings"
+        ],
+        "title": "ScenarioResult"
+      },
+      "SeriesComparison": {
+        "properties": {
+          "fuel": {
+            "$ref": "#/components/schemas/Fuel"
+          },
+          "pressure_level": {
+            "type": "string",
+            "title": "Pressure Level"
+          },
+          "suppressants": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suppressants"
+          },
+          "intervals_overlap": {
+            "type": "boolean",
+            "title": "Intervals Overlap"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fuel",
+          "pressure_level",
+          "suppressants",
+          "intervals_overlap",
+          "statement"
+        ],
+        "title": "SeriesComparison"
+      },
+      "SeriesEstimate": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "estimate"
+          },
+          "fuel": {
+            "$ref": "#/components/schemas/Fuel"
+          },
+          "pressure_level": {
+            "type": "string",
+            "title": "Pressure Level"
+          },
+          "suppressant": {
+            "type": "string",
+            "title": "Suppressant"
+          },
+          "tests": {
+            "type": "integer",
+            "title": "Tests"
+          },
+          "sustained": {
+            "type": "integer",
+            "title": "Sustained"
+          },
+          "extinguished": {
+            "type": "integer",
+            "title": "Extinguished"
+          },
+          "oxygen_tested_min": {
+            "type": "number",
+            "title": "Oxygen Tested Min"
+          },
+          "oxygen_tested_max": {
+            "type": "number",
+            "title": "Oxygen Tested Max"
+          },
+          "estimable": {
+            "type": "boolean",
+            "title": "Estimable"
+          },
+          "o2_50_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "O2 50 Percent"
+          },
+          "ci_low_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ci Low Percent"
+          },
+          "ci_high_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ci High Percent"
+          },
+          "ci_beyond_tested": {
+            "type": "boolean",
+            "title": "Ci Beyond Tested"
+          },
+          "suppressant_percent_at_o2_50": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suppressant Percent At O2 50"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fuel",
+          "pressure_level",
+          "suppressant",
+          "tests",
+          "sustained",
+          "extinguished",
+          "oxygen_tested_min",
+          "oxygen_tested_max",
+          "estimable",
+          "o2_50_percent",
+          "ci_low_percent",
+          "ci_high_percent",
+          "ci_beyond_tested",
+          "suppressant_percent_at_o2_50",
+          "status"
+        ],
+        "title": "SeriesEstimate"
+      },
+      "SimilarItem": {
+        "properties": {
+          "similarity": {
+            "type": "number",
+            "title": "Similarity",
+            "description": "0-100; 100 = identical tested condition"
+          },
+          "distance": {
+            "type": "number",
+            "title": "Distance"
+          },
+          "experiment": {
+            "$ref": "#/components/schemas/ExperimentSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "similarity",
+          "distance",
+          "experiment"
+        ],
+        "title": "SimilarItem"
+      },
+      "SimilarRequest": {
+        "properties": {
+          "fuel": {
+            "$ref": "#/components/schemas/Fuel"
+          },
+          "oxygen_percent": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Oxygen Percent",
+            "description": "O2 mole fraction in percent (air = 21)."
+          },
+          "suppressant": {
+            "$ref": "#/components/schemas/Suppressant",
+            "description": "Added diluent gas; 'none' = O2/N2 only.",
+            "default": "none"
+          },
+          "suppressant_percent": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Suppressant Percent",
+            "description": "Suppressant mole fraction in percent.",
+            "default": 0.0
+          },
+          "droplet_diameter_mm": {
+            "type": "number",
+            "maximum": 10.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Droplet Diameter Mm",
+            "description": "Initial droplet diameter in mm."
+          },
+          "k": {
+            "type": "integer",
+            "maximum": 25.0,
+            "minimum": 1.0,
+            "title": "K",
+            "description": "Number of similar tests to return",
+            "default": 5
+          }
+        },
+        "type": "object",
+        "required": [
+          "fuel",
+          "oxygen_percent",
+          "droplet_diameter_mm"
+        ],
+        "title": "SimilarRequest",
+        "example": {
+          "droplet_diameter_mm": 3.0,
+          "fuel": "Methanol",
+          "oxygen_percent": 21,
+          "suppressant": "CO2",
+          "suppressant_percent": 10
+        }
+      },
+      "SimilarResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "observed"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "query": {
+            "$ref": "#/components/schemas/Conditions"
+          },
+          "support_radius": {
+            "type": "number",
+            "title": "Support Radius"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SimilarItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "query",
+          "support_radius",
+          "items"
+        ],
+        "title": "SimilarResponse"
+      },
+      "Source": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "dataset",
+              "report"
+            ],
+            "title": "Kind"
+          },
+          "publisher": {
+            "type": "string",
+            "title": "Publisher"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "doi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doi"
+          },
+          "license": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License"
+          },
+          "citation": {
+            "type": "string",
+            "title": "Citation"
+          },
+          "used_for": {
+            "type": "string",
+            "title": "Used For"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "publisher",
+          "url",
+          "doi",
+          "license",
+          "citation",
+          "used_for"
+        ],
+        "title": "Source"
+      },
+      "SourceRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "doi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "url"
+        ],
+        "title": "SourceRef"
+      },
+      "StatsResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "observed"
+          },
+          "program": {
+            "type": "string",
+            "title": "Program"
+          },
+          "nasa_investigations": {
+            "type": "integer",
+            "title": "Nasa Investigations"
+          },
+          "nasa_sources": {
+            "type": "integer",
+            "title": "Nasa Sources"
+          },
+          "experiments": {
+            "$ref": "#/components/schemas/ExperimentCounts"
+          },
+          "fuels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fuels"
+          },
+          "suppressants_tested": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suppressants Tested"
+          },
+          "pressure_levels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pressure Levels"
+          },
+          "date_start": {
+            "type": "string",
+            "title": "Date Start"
+          },
+          "date_end": {
+            "type": "string",
+            "title": "Date End"
+          },
+          "model": {
+            "$ref": "#/components/schemas/ModelSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "program",
+          "nasa_investigations",
+          "nasa_sources",
+          "experiments",
+          "fuels",
+          "suppressants_tested",
+          "pressure_levels",
+          "date_start",
+          "date_end",
+          "model"
+        ],
+        "title": "StatsResponse"
+      },
+      "SubgroupRow": {
+        "properties": {
+          "subgroup": {
+            "type": "string",
+            "title": "Subgroup"
+          },
+          "tests": {
+            "type": "integer",
+            "title": "Tests"
+          },
+          "sustained": {
+            "type": "integer",
+            "title": "Sustained"
+          },
+          "roc_auc": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roc Auc"
+          },
+          "recall": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recall"
+          },
+          "missed_fires": {
+            "type": "integer",
+            "title": "Missed Fires"
+          },
+          "false_alarms": {
+            "type": "integer",
+            "title": "False Alarms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subgroup",
+          "tests",
+          "sustained",
+          "roc_auc",
+          "recall",
+          "missed_fires",
+          "false_alarms"
+        ],
+        "title": "SubgroupRow"
+      },
+      "Suppressant": {
+        "type": "string",
+        "enum": [
+          "none",
+          "CO2",
+          "He"
+        ],
+        "title": "Suppressant"
+      },
+      "SuppressantsResponse": {
+        "properties": {
+          "observed_provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "observed"
+          },
+          "estimate_provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "estimate"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "observed": {
+            "items": {
+              "$ref": "#/components/schemas/ObservedPoint"
+            },
+            "type": "array",
+            "title": "Observed"
+          },
+          "estimates": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesEstimate"
+            },
+            "type": "array",
+            "title": "Estimates"
+          },
+          "comparisons": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesComparison"
+            },
+            "type": "array",
+            "title": "Comparisons"
+          },
+          "conclusion": {
+            "type": "string",
+            "title": "Conclusion"
+          },
+          "caveats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Caveats"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "observed",
+          "estimates",
+          "comparisons",
+          "conclusion",
+          "caveats"
+        ],
+        "title": "SuppressantsResponse"
+      },
+      "Sweep": {
+        "properties": {
+          "feature": {
+            "type": "string",
+            "enum": [
+              "oxygen",
+              "droplet"
+            ],
+            "title": "Feature"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/SweepPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "feature",
+          "label",
+          "unit",
+          "points"
+        ],
+        "title": "Sweep"
+      },
+      "SweepPoint": {
+        "properties": {
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "a": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "A"
+          },
+          "b": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "B"
+          },
+          "a_supported": {
+            "type": "boolean",
+            "title": "A Supported"
+          },
+          "b_supported": {
+            "type": "boolean",
+            "title": "B Supported"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x",
+          "a",
+          "b",
+          "a_supported",
+          "b_supported"
+        ],
+        "title": "SweepPoint"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WhatIfRequest": {
+        "properties": {
+          "scenario_a": {
+            "$ref": "#/components/schemas/Conditions"
+          },
+          "scenario_b": {
+            "$ref": "#/components/schemas/Conditions"
+          },
+          "sweep": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "oxygen",
+                  "droplet"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sweep",
+            "default": "oxygen"
+          },
+          "sweep_points": {
+            "type": "integer",
+            "maximum": 200.0,
+            "minimum": 5.0,
+            "title": "Sweep Points",
+            "default": 40
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_a",
+          "scenario_b"
+        ],
+        "title": "WhatIfRequest"
+      },
+      "WhatIfResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "hypothetical"
+          },
+          "a": {
+            "$ref": "#/components/schemas/ScenarioResult"
+          },
+          "b": {
+            "$ref": "#/components/schemas/ScenarioResult"
+          },
+          "delta": {
+            "type": "number",
+            "title": "Delta"
+          },
+          "path": {
+            "items": {
+              "$ref": "#/components/schemas/PathStep"
+            },
+            "type": "array",
+            "title": "Path"
+          },
+          "sweep": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sweep"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "a",
+          "b",
+          "delta",
+          "path",
+          "sweep",
+          "notes"
+        ],
+        "title": "WhatIfResponse"
+      }
+    }
+  }
+}
