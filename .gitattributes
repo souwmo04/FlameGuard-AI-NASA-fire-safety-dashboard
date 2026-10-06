@@ -1,0 +1,2 @@
+# Raw NASA files must stay byte-identical to the download (checksums in MANIFEST.json)
+data/raw/** -text

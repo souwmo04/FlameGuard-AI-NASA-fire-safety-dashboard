@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Large NASA documents: re-fetch with scripts/download_flex.py
+documents/**/*.pdf
+*.part
+
+# Generated artifacts
+models/*
+!models/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+
+# Secrets
+.env
+.streamlit/secrets.toml
