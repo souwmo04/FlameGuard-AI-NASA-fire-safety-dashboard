@@ -1,0 +1,48 @@
+{
+  "rows": 274,
+  "outcome_counts": {
+    "Extinction": 186,
+    "Disruption": 61,
+    "Completion": 27
+  },
+  "y_sustained_counts": {
+    "0": 186,
+    "1": 88
+  },
+  "fuel_counts": {
+    "Methanol": 157,
+    "Heptane": 117
+  },
+  "diluent_counts": {
+    "CO2": 123,
+    "N2": 101,
+    "He": 50
+  },
+  "pressure_level_counts": {
+    "1atm": 161,
+    "0.7atm": 104,
+    "2-3atm": 9
+  },
+  "n_group_id_fill": 79,
+  "n_group_id_atmosphere": 45,
+  "missing_values": {
+    "pressure_mmhg": 1,
+    "pressure_atm": 1,
+    "p_o2_atm": 1,
+    "d0_mm": 12,
+    "d_ext_mm": 77,
+    "burn_rate_mm2_s": 16,
+    "burn_time_s": 6
+  },
+  "qc_flag_counts": {
+    "pressure_invalid_zero": 1,
+    "pressure_level_from_group": 1,
+    "duplicate_identifier": 2,
+    "approx_burn_time": 2,
+    "missing_d0": 12,
+    "missing_test_time": 1,
+    "d_ext_gt_d0": 1,
+    "d_ext_without_extinction": 38,
+    "extinction_d_ext_unmeasured": 27
+  }
+}
