@@ -72,3 +72,39 @@ no SF₆ (mentioned in FLEX objectives but not in this table), no support-fiber 
 4. Identifier `193F001` appears twice (tests 70 and 73).
 5. Mole fractions sum to 0.98–1.01 (rounding).
 6. Header subscripts lost (`O`→O₂, `CO`→CO₂, `N`→N₂); burning-rate unit mislabelled.
+
+## Cleaning (Phase 3) — `data/processed/combustion_master.csv`
+
+Built by `python scripts/build_master.py` (code: `src/flameguard/preprocessing.py`,
+schema: `src/flameguard/schema.py`, tests: `tests/test_preprocessing.py`).
+Counts below are from `data/processed/qc_summary.json`.
+
+**Rules**
+- No value is invented, imputed or renormalised. Missing or invalid source values stay `NaN`.
+- No row is dropped. Anomalies are recorded in the semicolon-separated `qc_flags` column
+  (definitions in `schema.QC_FLAGS`); exclusion decisions are made, and documented, at
+  modelling time.
+- Unknown tokens, outcome labels, fuels or identifier patterns raise an error instead of
+  being guessed.
+
+**Decisions**
+
+| Item | Decision |
+|---|---|
+| Target `y_sustained` | 1 = Completion or Disruption (flame had not self-extinguished while fuel remained), 0 = Extinction. 88 vs 186. |
+| `diluent` | `He` if x_He > 0, `CO2` if x_CO2 > 0, else `N2` (no test has both). CO2 123, N2 101, He 50. |
+| `p_o2_atm` | x_O2 × pressure_atm. |
+| Test 114 pressure 0.0 | Set to missing; `pressure_level` (0.7 atm) taken from its chamber-fill siblings for validation grouping only. |
+| `pressure_level` | Bands `0.7atm` (104), `1atm` (161), `2-3atm` (9). The high-pressure tests span 2.03–3.05 atm within one CO2-diluted series, so they are not given a nominal value. |
+| Tests 70 & 73 | Same identifier and GMT time in the NASA report itself, but described as separate tests (both with fuel-dispensing anomalies). Kept, flagged `duplicate_identifier`. |
+| Dates | Source mixes `3/5/2009` and `10/24/09`; both parsed explicitly. Stored as ISO 8601 GMT. |
+| `flow_cm_s` | Missing for every FLEX row (quiescent chamber, not recorded); never 0. |
+| `d_ext_mm` on non-extinction tests | Present for 38 Completion/Disruption tests in the NASA table; kept and flagged. Post-outcome, never a feature. |
+
+**Validation groups** (for grouped cross-validation; never model inputs)
+- `group_id_fill`: chamber-atmosphere setpoint decoded from the identifier (`C10`, `H05`, `TP193`, `CAL`) — 79 groups.
+- `group_id_atmosphere`: pressure band + O2/CO2/He mole fractions — 45 groups (1–29 tests each).
+  More conservative: no atmosphere ever appears in both training and test folds.
+
+**Remaining missing values**: `d0_mm` 12, `pressure_atm` 1, `burn_rate_mm2_s` 16,
+`burn_time_s` 6, `d_ext_mm` 77.
