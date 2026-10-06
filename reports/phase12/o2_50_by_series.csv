@@ -1,0 +1,13 @@
+fuel,pressure,diluent,tests,sustained,extinguished,o2_tested_min,o2_tested_max,o2_50,ci_low,ci_high,boot_valid,ci_beyond_tested,suppressant_at_o2_50,status
+Heptane,0.7atm,CO2,18,5,13,0.17,0.25,0.23574565616164966,0.22792289661765017,0.24084314450290276,0.989,False,0.2,estimated
+Heptane,0.7atm,He,10,2,8,0.17,0.24,,,,,False,,not estimable: 2 sustained / 8 extinguished (need 3 of each)
+Heptane,0.7atm,N2,9,8,1,0.2,0.34,,,,,False,,not estimable: 8 sustained / 1 extinguished (need 3 of each)
+Heptane,1atm,CO2,26,13,13,0.17,0.24,0.217528579403811,0.20581167732059874,0.23479609670469107,0.994,False,0.05,estimated
+Heptane,1atm,He,11,5,6,0.16,0.21,0.20940753209964746,0.17899756941210768,0.35238467326731876,0.874,True,0.15,estimated
+Heptane,1atm,N2,32,17,15,0.13,0.3,0.19462076900889433,0.19116581653824766,0.21741397307851387,0.993,False,,estimated
+Methanol,0.7atm,CO2,39,11,28,0.15,0.25,0.23648811081182483,0.21879121226162043,0.27927794206287965,0.991,True,0.2,estimated
+Methanol,0.7atm,He,14,2,12,0.17,0.24,,,,,False,,not estimable: 2 sustained / 12 extinguished (need 3 of each)
+Methanol,0.7atm,N2,12,10,2,0.2,0.34,,,,,False,,not estimable: 10 sustained / 2 extinguished (need 3 of each)
+Methanol,1atm,CO2,29,2,27,0.14,0.21,,,,,False,,not estimable: 2 sustained / 27 extinguished (need 3 of each)
+Methanol,1atm,He,12,0,12,0.13,0.2,,,,,False,,not estimable: 0 sustained / 12 extinguished (need 3 of each)
+Methanol,1atm,N2,41,5,36,0.12,0.3,0.27970151531768545,0.21674344437133597,0.2994589939347353,0.913,False,,estimated
