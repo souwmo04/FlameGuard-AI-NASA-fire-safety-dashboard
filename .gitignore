@@ -13,6 +13,9 @@ documents/**/*.pdf
 # Generated artifacts
 models/*
 !models/.gitkeep
+# the deployable final model is small and needed by the dashboard
+!models/final_model.joblib
+!models/final_model.json
 data/interim/*
 !data/interim/.gitkeep
 

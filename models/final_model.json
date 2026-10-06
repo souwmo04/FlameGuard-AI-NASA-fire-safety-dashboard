@@ -1,0 +1,187 @@
+{
+  "metadata": {
+    "model": "L2 logistic regression (C=1), fuel x droplet-size interaction, no pressure (decision D-001)",
+    "features": [
+      "is_heptane",
+      "x_o2",
+      "x_co2",
+      "x_he",
+      "d0_mm",
+      "heptane_x_d0"
+    ],
+    "standardised_coefficients": {
+      "is_heptane": 0.5779,
+      "x_o2": 2.2851,
+      "x_co2": -0.5441,
+      "x_he": -0.6182,
+      "d0_mm": 0.3572,
+      "heptane_x_d0": -1.5061
+    },
+    "intercept": -1.3814063882495904,
+    "training_tests": 252,
+    "training_sustained": 80,
+    "training_data_sha256": "d634e79b715933f389c73f201ac1c636d891567adf74e701c851122e66c9f7b4",
+    "scope": "Methanol or n-heptane droplets, quiescent microgravity (ISS FLEX), 0.7-1 atm, within the tested O2 / CO2 / He / droplet-size ranges",
+    "validation": {
+      "scheme": "5 x repeated 5-fold StratifiedGroupKFold by chamber atmosphere (25 folds)",
+      "nested_threshold_estimates": {
+        "roc_auc": [
+          0.9252369331702566,
+          0.04541045714953303
+        ],
+        "pr_auc": [
+          0.8767636570917829,
+          0.08148202166048507
+        ],
+        "brier": [
+          0.10326350609373466,
+          0.03147508489345536
+        ],
+        "log_loss": [
+          0.33566546924522866,
+          0.10855770186208685
+        ],
+        "recall@safe": [
+          0.8998461538461539,
+          0.08869295408864407
+        ],
+        "precision@safe": [
+          0.6253626881891967,
+          0.12226888907811681
+        ],
+        "false_negative_rate@safe": [
+          0.10015384615384613,
+          0.08869295408864404
+        ]
+      },
+      "oof_bootstrap_95ci": {
+        "roc_auc": [
+          0.9184593023255815,
+          0.8699818991763423,
+          0.964226867003983
+        ],
+        "pr_auc": [
+          0.847076912638035,
+          0.7305613798481656,
+          0.9392144221373501
+        ],
+        "brier": [
+          0.10393899489208745,
+          0.06849368892116607,
+          0.13536138670361714
+        ],
+        "log_loss": [
+          0.3378731688755023,
+          0.22814178336843768,
+          0.43676528426838757
+        ],
+        "recall": [
+          0.9,
+          0.8125,
+          0.9767508687516706
+        ],
+        "precision": [
+          0.5669291338582677,
+          0.43962058322690506,
+          0.7041025426564067
+        ],
+        "false_negative_rate": [
+          0.1,
+          0.023249131248329325,
+          0.1875
+        ],
+        "false_positive_rate": [
+          0.31976744186046513,
+          0.198500386996904,
+          0.4404936974789915
+        ]
+      },
+      "calibration_slope_range": [
+        0.8951815204380285,
+        1.0153508060409067
+      ]
+    },
+    "versions": {
+      "python": "3.12.10",
+      "sklearn": "1.9.1",
+      "pandas": "3.0.6",
+      "numpy": "2.5.3"
+    },
+    "label": "Research prototype trained on NASA PSI-69 (FLEX), DOI 10.60555/mbq8-0451. Not a certified spacecraft fire-safety system."
+  },
+  "bands": {
+    "alert_threshold": 0.1843300768776712,
+    "high_threshold": 0.5,
+    "target_recall": 0.9,
+    "band_stats": {
+      "LOW": {
+        "tests": 125.0,
+        "sustained": 8.0,
+        "mean_predicted": 0.0556076731163079,
+        "observed_sustained_rate": 0.064,
+        "ci_low": 0.032783186697971346,
+        "ci_high": 0.12121676362863126
+      },
+      "ELEVATED": {
+        "tests": 65.0,
+        "sustained": 18.0,
+        "mean_predicted": 0.32082376328145845,
+        "observed_sustained_rate": 0.27692307692307694,
+        "ci_low": 0.18293439815390553,
+        "ci_high": 0.3958086874222576
+      },
+      "HIGH": {
+        "tests": 62.0,
+        "sustained": 54.0,
+        "mean_predicted": 0.828821367591474,
+        "observed_sustained_rate": 0.8709677419354839,
+        "ci_low": 0.7655044310309549,
+        "ci_high": 0.9331420174150125
+      }
+    }
+  },
+  "domain": {
+    "ranges": {
+      "Methanol": {
+        "x_o2": [
+          0.12,
+          0.34
+        ],
+        "x_co2": [
+          0.0,
+          0.5
+        ],
+        "x_he": [
+          0.0,
+          0.45
+        ],
+        "d0_mm": [
+          1.61,
+          4.53
+        ]
+      },
+      "Heptane": {
+        "x_o2": [
+          0.13,
+          0.34
+        ],
+        "x_co2": [
+          0.0,
+          0.45
+        ],
+        "x_he": [
+          0.0,
+          0.45
+        ],
+        "d0_mm": [
+          1.1,
+          4.67
+        ]
+      }
+    },
+    "support_radius": {
+      "Methanol": 0.9338663617926455,
+      "Heptane": 0.8279245428074982
+    }
+  }
+}
