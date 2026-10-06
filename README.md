@@ -27,6 +27,7 @@ Details and known data issues: [docs/data_card.md](docs/data_card.md).
 | 9 Final evaluation, risk bands, deployable model | [notebooks/05_final_evaluation.ipynb](notebooks/05_final_evaluation.ipynb), [model card](docs/model_card.md), `models/final_model.joblib` |
 | 10 Explainable AI (SHAP) | [notebooks/06_explainability_shap.ipynb](notebooks/06_explainability_shap.ipynb), `reports/phase10/` |
 | 11 Streamlit dashboard | `dashboard/app.py` (Home, Experiment Explorer, Fire Risk Predictor, Ranking, Model Performance, Data & Methods) |
+| 12 What-if analysis, suppressant comparison | dashboard pages *What-if Analysis* and *Suppressant Comparison*, [method and results](docs/whatif_and_suppressants.md), `reports/phase12/` |
 
 **Final model (selected by a pre-registered rule):** L2 logistic regression on fuel, O₂, CO₂, He, initial droplet
 diameter and a fuel × droplet-size term; pressure was dropped (decision D-001). Cross-validated over 25 grouped folds:
@@ -50,6 +51,7 @@ python scripts/train_baselines.py  # Phase 7 cross-validated models -> reports/p
 python scripts/phase8_experiments.py  # Phase 8 tuning/ablation/sensitivity/stress -> reports/phase8/
 python scripts/finalize_model.py   # Phase 9 calibration, risk bands, final model -> models/, reports/phase9/
 python scripts/explain_model.py    # Phase 10 SHAP explanations -> reports/phase10/
+python scripts/suppressant_analysis.py  # Phase 12 O2-50 per test series -> reports/phase12/
 streamlit run dashboard/app.py   # open the dashboard at http://localhost:8501
 python -m pytest                # run tests
 ```
