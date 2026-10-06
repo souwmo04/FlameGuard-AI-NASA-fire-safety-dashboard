@@ -9,6 +9,7 @@ import streamlit as st
 
 PROVENANCE = {
     "observed": (":material/science:", "Observed NASA result", "blue"),
+    "estimate": (":material/functions:", "Statistical estimate from NASA data", "primary"),
     "prediction": (":material/model_training:", "Model prediction", "violet"),
     "explanation": (":material/insights:", "Model explanation (SHAP)", "green"),
     "hypothetical": (":material/tune:", "Hypothetical scenario", "orange"),
@@ -30,6 +31,7 @@ def badge(kind: str) -> None:
 def provenance_legend() -> None:
     notes = {
         "observed": "Measured on the ISS in NASA's FLEX experiment.",
+        "estimate": "Summary fitted directly to observed tests, with uncertainty; no ML model.",
         "prediction": "Output of the trained model; not a measurement.",
         "explanation": "How the model used each input; associations, not causes.",
         "hypothetical": "A condition you set; may not have been tested.",
@@ -67,3 +69,24 @@ def risk_card(result, band_stats: dict) -> None:
                 f"the model placed in the {band} band actually kept burning "
                 f"(95% CI {stats['ci_low']:.0%}–{stats['ci_high']:.0%})."
             )
+
+
+def condition_inputs(prefix: str, ranges: dict, defaults: dict) -> dict:
+    """Fuel / suppressant / O2 / droplet-size inputs bounded to the tested ranges; widget keys use `prefix`."""
+    fuel = st.radio("Fuel", ["Methanol", "Heptane"], horizontal=True, key=f"{prefix}fuel",
+                    index=["Methanol", "Heptane"].index(defaults["fuel"]))
+    r = ranges[fuel]
+    o2 = st.slider("Oxygen mole fraction", float(r["x_o2"][0]), float(r["x_o2"][1]), defaults["x_o2"], 0.01,
+                   key=f"{prefix}o2")
+    options = ["None (O₂/N₂ only)", "CO₂", "He"]
+    supp = st.selectbox("Suppressant added", options, key=f"{prefix}supp", index=options.index(defaults["supp"]))
+    x_co2 = x_he = 0.0
+    if supp == "CO₂":
+        x_co2 = st.slider("CO₂ mole fraction", 0.0, float(r["x_co2"][1]), defaults.get("amount", 0.10), 0.01,
+                          key=f"{prefix}co2")
+    elif supp == "He":
+        x_he = st.slider("He mole fraction", 0.0, float(r["x_he"][1]), defaults.get("amount", 0.10), 0.01,
+                         key=f"{prefix}he")
+    d0 = st.slider("Initial droplet diameter (mm)", float(r["d0_mm"][0]), float(r["d0_mm"][1]), defaults["d0_mm"],
+                   0.05, key=f"{prefix}d0")
+    return {"fuel": fuel, "x_o2": o2, "x_co2": x_co2, "x_he": x_he, "d0_mm": d0}

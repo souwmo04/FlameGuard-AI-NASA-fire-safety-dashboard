@@ -3,6 +3,7 @@ chart chrome follows the Streamlit theme (light/dark) via st.plotly_chart(theme=
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -124,3 +125,108 @@ def oof_strip(df: pd.DataFrame, alert: float) -> go.Figure:
     fig.update_xaxes(range=[-1, 101], title_text="Fire Risk (out-of-fold prediction)")
     fig.update_layout(showlegend=False)
     return _layout(fig, 300)
+
+
+SCENARIO_COLORS = {"A": "#2a78d6", "B": "#eb6834"}
+
+
+def path_chart(path: pd.DataFrame) -> go.Figure:
+    """Fire Risk after each one-at-a-time change from scenario A to scenario B."""
+    labels = [("A (baseline)" if s == "baseline" else f"{i}. {s}") for i, s in enumerate(path["step"])]
+    supported = path["supported_by_data"] & path["in_tested_range"]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=labels, y=path["fire_risk"], mode="lines", line=dict(color=NEUTRAL, width=2),
+                             hoverinfo="skip", showlegend=False))
+    for ok, name, symbol in [(True, "inside tested conditions", "circle"),
+                             (False, "extrapolation (untested combination)", "circle-open")]:
+        sel = supported == ok
+        if sel.any():
+            fig.add_trace(go.Scatter(
+                x=[l for l, s in zip(labels, sel) if s], y=path.loc[sel, "fire_risk"], mode="markers+text",
+                name=name, marker=dict(size=14, symbol=symbol, color=SCENARIO_COLORS["B"],
+                                       line=dict(width=2, color=SCENARIO_COLORS["B"])),
+                text=[f"{r:.0f}" for r in path.loc[sel, "fire_risk"]], textposition="top center",
+                customdata=path.loc[sel, ["change", "delta", "risk_band"]],
+                hovertemplate="%{customdata[0]}<br>Fire Risk <b>%{y:.1f}</b> (%{customdata[1]:+.1f})"
+                              " · %{customdata[2]}<extra></extra>"))
+    fig.update_yaxes(range=[-5, 110], title_text="Fire Risk (0\u2013100)")
+    return _layout(fig, 360)
+
+
+def sweep_chart(curves: dict[str, pd.DataFrame], feature: str, label: str,
+                markers: dict[str, float] | None = None) -> go.Figure:
+    """Risk vs one input per scenario; hollow points = outside the tested region."""
+    fig = go.Figure()
+    for name, df in curves.items():
+        color = SCENARIO_COLORS[name]
+        fig.add_trace(go.Scatter(x=df[feature], y=df["fire_risk"], mode="lines", line=dict(color=color, width=2),
+                                 name=f"Scenario {name}", hovertemplate=f"{label} %{{x:.2f}}: Fire Risk <b>%{{y:.1f}}</b><extra>{name}</extra>"))
+        off = df[~df["supported"]]
+        if not off.empty:
+            fig.add_trace(go.Scatter(x=off[feature], y=off["fire_risk"], mode="markers", showlegend=False,
+                                     marker=dict(symbol="circle-open", size=7, color=color), hoverinfo="skip"))
+        if markers and name in markers:
+            x0 = markers[name]
+            y0 = float(np.interp(x0, df[feature], df["fire_risk"]))
+            fig.add_trace(go.Scatter(x=[x0], y=[y0], mode="markers", showlegend=False,
+                                     marker=dict(size=14, color=color, line=dict(width=2, color="white")),
+                                     hovertemplate=f"Scenario {name}: Fire Risk <b>%{{y:.1f}}</b><extra></extra>"))
+    fig.update_xaxes(title_text=label)
+    fig.update_yaxes(range=[-3, 103], title_text="Fire Risk (0\u2013100)")
+    return _layout(fig, 340)
+
+
+def o2_50_chart(table: pd.DataFrame) -> go.Figure:
+    """Estimated O2_50 per series with 95% bootstrap interval (estimable series only)."""
+    est = table[table["status"] == "estimated"].copy()
+    est["label"] = est["fuel"] + " · " + est["pressure"].str.replace("atm", " atm") + " · " + est["diluent"].map(DILUENT_LABELS)
+    est = est.sort_values(["fuel", "pressure", "o2_50"])
+    fig = go.Figure(go.Scatter(
+        x=est["o2_50"], y=est["label"], mode="markers",
+        marker=dict(size=13, color=[DILUENT_COLORS[d] for d in est["diluent"]],
+                    symbol=["circle" if not b else "circle-open" for b in est["ci_beyond_tested"]],
+                    line=dict(width=2, color=[DILUENT_COLORS[d] for d in est["diluent"]])),
+        error_x=dict(type="data", symmetric=False, array=est["ci_high"] - est["o2_50"],
+                     arrayminus=est["o2_50"] - est["ci_low"], color=NEUTRAL, thickness=1.4, width=0),
+        customdata=est[["ci_low", "ci_high", "tests", "sustained", "o2_tested_min", "o2_tested_max"]],
+        hovertemplate=("O\u2082\u2085\u2080 <b>%{x:.3f}</b> (95% CI %{customdata[0]:.3f}\u2013%{customdata[1]:.3f})<br>"
+                       "%{customdata[3]} of %{customdata[2]} tests sustained · tested O\u2082 "
+                       "%{customdata[4]:.2f}\u2013%{customdata[5]:.2f}<extra>%{y}</extra>"),
+    ))
+    fig.update_xaxes(title_text="O\u2082 mole fraction at which half of 3 mm droplets kept burning (O\u2082\u2085\u2080)")
+    fig.update_yaxes(automargin=True, autorange="reversed")
+    return _layout(fig, 90 + 46 * len(est))
+
+
+def series_strip(df: pd.DataFrame) -> go.Figure:
+    """Observed outcomes per test series: O2 on x, suppressant on y, fuel x pressure facets."""
+    combos = [(f, p) for f in FUELS for p in ["0.7atm", "1atm"]]
+    fig = make_subplots(rows=2, cols=2, shared_xaxes=True, shared_yaxes=True, vertical_spacing=0.14,
+                        horizontal_spacing=0.04, subplot_titles=[f"{f} · {p.replace('atm', ' atm')}" for f, p in combos])
+    rng = np.random.default_rng(0)
+    ypos = {"N2": 0, "CO2": 1, "He": 2}
+    for k, (fuel, p) in enumerate(combos):
+        r, c = k // 2 + 1, k % 2 + 1
+        for dil in ["N2", "CO2", "He"]:
+            for sustained in (0, 1):
+                sub = df[(df["fuel"] == fuel) & (df["pressure_level"] == p) & (df["diluent"] == dil)
+                         & (df["y_sustained"] == sustained)]
+                if sub.empty:
+                    continue
+                fig.add_trace(go.Scatter(
+                    x=sub["x_o2"] + rng.uniform(-0.002, 0.002, len(sub)),
+                    y=ypos[dil] + (0.18 if sustained else -0.18) + rng.uniform(-0.08, 0.08, len(sub)),
+                    mode="markers", showlegend=k == 0,
+                    name=f"{DILUENT_LABELS[dil]} · {'sustained' if sustained else 'extinguished'}",
+                    legendgroup=f"{dil}{sustained}",
+                    marker=dict(symbol="triangle-up" if sustained else "circle-open", size=9 if sustained else 8,
+                                color=DILUENT_COLORS[dil], line=dict(width=1.6, color=DILUENT_COLORS[dil])),
+                    customdata=sub[["test_id", "x_co2", "x_he", "d0_mm", "outcome_raw"]],
+                    hovertemplate=("<b>%{customdata[4]}</b> · test %{customdata[0]}<br>O\u2082 %{x:.2f} · CO\u2082 "
+                                   "%{customdata[1]:.2f} · He %{customdata[2]:.2f} · d\u2080 %{customdata[3]:.2f} mm"
+                                   "<extra></extra>")), row=r, col=c)
+    fig.update_yaxes(tickvals=[0, 1, 2], ticktext=["N\u2082 only", "CO\u2082", "He"], range=[-0.6, 2.6])
+    fig.update_xaxes(title_text="O\u2082 mole fraction", row=2)
+    fig = _layout(fig, 560)
+    fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.12, x=0), margin=dict(b=110))
+    return fig
