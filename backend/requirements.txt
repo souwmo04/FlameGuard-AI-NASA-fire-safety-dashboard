@@ -1,0 +1,16 @@
+# Runtime dependencies of the FlameGuard API (FastAPI + the flameguard science library).
+# Install the library itself from the repository root:  pip install -e .
+
+# Data
+pandas>=2.2
+numpy>=1.26
+
+# ML / explainability
+scikit-learn>=1.5
+xgboost>=2.1
+shap>=0.46
+joblib>=1.4
+
+# API
+fastapi>=0.115
+uvicorn[standard]>=0.30

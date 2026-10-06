@@ -1,23 +1,13 @@
-# Data
-pandas>=2.2
-numpy>=1.26
+# Full development environment (pipeline, notebooks, API, tests).
+# The API's runtime-only dependencies are in backend/requirements.txt.
+-r backend/requirements.txt
 
-# ML
-scikit-learn>=1.5
-xgboost>=2.1
-
-# Explainability
-shap>=0.46
-
-# Visualization
-plotly>=5.24
+# Visualization for notebooks / report figures
 matplotlib>=3.9
-
-# Dashboard
-streamlit>=1.40
 
 # Notebooks
 jupyterlab>=4.2
 
 # Testing
 pytest>=8.3
+httpx>=0.27

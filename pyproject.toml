@@ -1,9 +1,16 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "flameguard"
-version = "0.1.0"
+version = "0.2.0"
 description = "AI-powered fire safety insights from NASA microgravity combustion data"
 requires-python = ">=3.11"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]
+pythonpath = ["src", "backend"]
+testpaths = ["tests", "backend/tests"]
