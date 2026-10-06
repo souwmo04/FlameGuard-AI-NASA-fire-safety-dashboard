@@ -193,7 +193,7 @@ def o2_50_chart(table: pd.DataFrame) -> go.Figure:
                        "%{customdata[3]} of %{customdata[2]} tests sustained · tested O\u2082 "
                        "%{customdata[4]:.2f}\u2013%{customdata[5]:.2f}<extra>%{y}</extra>"),
     ))
-    fig.update_xaxes(title_text="O\u2082 mole fraction at which half of 3 mm droplets kept burning (O\u2082\u2085\u2080)")
+    fig.update_xaxes(title_text="O\u2082\u2085\u2080 (O\u2082 mole fraction; higher = needed more oxygen)")
     fig.update_yaxes(automargin=True, autorange="reversed")
     return _layout(fig, 90 + 46 * len(est))
 
