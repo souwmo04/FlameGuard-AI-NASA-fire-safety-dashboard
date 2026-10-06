@@ -74,3 +74,12 @@ def test_saved_model_is_monotone_in_oxygen_and_ignores_pressure():
 def test_saved_model_rejects_missing_inputs():
     with pytest.raises(ValueError, match="Missing inputs"):
         FinalModel.load().predict(pd.DataFrame([{"fuel": "Heptane", "x_o2": 0.21}]))
+
+
+def test_domain_with_single_atmosphere_is_conservative():
+    X = pd.DataFrame({"fuel": ["Methanol", "Methanol", "Heptane"], "x_o2": [0.2, 0.2, 0.21],
+                      "x_co2": [0.0, 0.0, 0.0], "x_he": [0.0, 0.0, 0.0], "d0_mm": [3.0, 3.1, 3.0]})
+    dom = ApplicabilityDomain.fit(X, pd.Series(["g1", "g1", "g2"]))
+    assert dom.support_radius["Methanol"] == 0.0 and dom.support_radius["Heptane"] == 0.0
+    check = dom.check(pd.Series({"fuel": "Heptane", "x_o2": 0.21, "x_co2": 0.0, "x_he": 0.0, "d0_mm": 3.0}))
+    assert check["supported"]  # identical to the only tested point (distance 0)

@@ -80,7 +80,10 @@ class ApplicabilityDomain:
             ranges[fuel] = {c: [float(sub[c].min()), float(sub[c].max())] for c in DOMAIN_FEATURES}
             d = np.sqrt(((Z[:, None, :] - Z[None, :, :]) ** 2).sum(-1))
             d[g[:, None] == g[None, :]] = np.inf  # same atmosphere = near-duplicate, not "support"
-            radius[fuel] = float(np.quantile(d.min(axis=1), quantile))
+            gaps = d.min(axis=1)
+            gaps = gaps[np.isfinite(gaps)]
+            # With a single tested atmosphere there is no "typical gap": treat everything as unsupported.
+            radius[fuel] = float(np.quantile(gaps, quantile)) if gaps.size else 0.0
             points[fuel] = Z.tolist()
         return cls(ranges=ranges, scale=scale, points=points, support_radius=radius)
 
