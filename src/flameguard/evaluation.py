@@ -13,6 +13,7 @@ out-of-fold (each test predicted once per repeat), averaged over repeats.
 
 from __future__ import annotations
 
+import json
 from typing import Callable
 
 import numpy as np
@@ -20,7 +21,7 @@ import pandas as pd
 from sklearn.base import clone
 from sklearn.metrics import (accuracy_score, average_precision_score, brier_score_loss, confusion_matrix,
                              f1_score, log_loss, precision_score, recall_score, roc_auc_score)
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import GridSearchCV, StratifiedGroupKFold
 from sklearn.pipeline import Pipeline
 
 from flameguard.dataset import ModelingData
@@ -64,6 +65,13 @@ def choose_threshold(y: np.ndarray, p: np.ndarray, target_recall: float = TARGET
     return float(np.min(p))
 
 
+def fit_model(model, X: pd.DataFrame, y: pd.Series, groups: pd.Series):
+    """Fit; grid searches also receive the training groups so their inner folds stay grouped."""
+    if isinstance(model, GridSearchCV):
+        return model.fit(X, y, groups=groups)
+    return model.fit(X, y)
+
+
 def inner_oof_probabilities(model: Pipeline, X: pd.DataFrame, y: pd.Series, groups: pd.Series,
                             seed: int) -> np.ndarray:
     """Out-of-fold probabilities on the training fold via grouped inner CV."""
@@ -86,17 +94,27 @@ def cross_validate(model_factory: Callable[[], Pipeline], data: ModelingData, sp
     for i, s in enumerate(splits):
         model = model_factory()
         Xtr, ytr, gtr = X.iloc[s.train], y.iloc[s.train], groups.iloc[s.train]
-        fitted = clone(model).fit(Xtr, ytr)
+        fitted = fit_model(clone(model), Xtr, ytr, gtr)
         p = fitted.predict_proba(X.iloc[s.test])[:, 1]
         yte = y.iloc[s.test].to_numpy()
 
+        # For a grid search, the threshold is picked with the chosen hyperparameters held
+        # fixed (re-running the whole search inside every inner fold would be costlier and
+        # changes little); the outer test fold is still never used.
+        best_params = None
+        threshold_model = model
+        if isinstance(fitted, GridSearchCV):
+            best_params = fitted.best_params_
+            threshold_model = clone(fitted.best_estimator_)
+
         threshold = np.nan
         if select_threshold:
-            inner = inner_oof_probabilities(model, Xtr, ytr, gtr, seed=1000 + i)
+            inner = inner_oof_probabilities(threshold_model, Xtr, ytr, gtr, seed=1000 + i)
             threshold = choose_threshold(ytr.to_numpy(), inner, target_recall)
 
         row = {"model": model_name, "split": s.name, "repeat": s.repeat, "fold": s.fold,
-               "n_test": len(yte), "n_sustained": int(yte.sum())}
+               "n_test": len(yte), "n_sustained": int(yte.sum()),
+               "best_params": json.dumps(best_params, default=str) if best_params else ""}
         row |= probability_metrics(yte, p)
         row |= {f"{k}@0.5": v for k, v in threshold_metrics(yte, p, 0.5).items()}
         if select_threshold:
