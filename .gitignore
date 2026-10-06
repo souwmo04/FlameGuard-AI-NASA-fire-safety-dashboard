@@ -25,3 +25,8 @@ data/interim/*
 
 # Experiment run logs (timings only; results are in the CSVs)
 reports/**/log_*.txt
+
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/.env*.local

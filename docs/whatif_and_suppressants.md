@@ -1,6 +1,6 @@
 # What-if analysis and suppressant comparison (Phase 12)
 
-## What-if analysis (`src/flameguard/whatif.py`, dashboard page *What-if Analysis*)
+## What-if analysis (`src/flameguard/whatif.py`, API `POST /api/what-if`)
 
 **Provenance: hypothetical scenario + model prediction.**
 
@@ -14,7 +14,7 @@
 - **Caveat shown on the page whenever the suppressant changes:** FLEX lowered O₂ while adding CO₂/He, so the model
   cannot isolate a suppressant effect (Phase 8 ablation: suppressant inputs add no measurable skill).
 
-## Suppressant comparison (`src/flameguard/suppressant.py`, page *Suppressant Comparison*)
+## Suppressant comparison (`src/flameguard/suppressant.py`, API `GET /api/suppressants`)
 
 **Provenance: observed NASA tests + statistical estimate. No machine-learning model is used.**
 
