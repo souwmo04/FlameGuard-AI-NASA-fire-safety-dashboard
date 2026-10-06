@@ -1,0 +1,88 @@
+# Model card — FlameGuard AI flame-persistence model
+
+> **Research prototype.** Trained on NASA FLEX data for the NASA Space Apps Challenge 2026. It is **not** a
+> certified spacecraft fire-safety system and must not be used for operational decisions.
+
+## What it predicts
+
+`P(sustained)`: the probability that a burning **single fuel droplet** in a quiescent microgravity atmosphere keeps
+burning instead of self-extinguishing while fuel remains (NASA outcome *Completion* or *Disruption* vs
+*Extinction*).
+
+**Fire Risk Score = 100 × P(sustained).**
+
+| Band | Score | Meaning, from out-of-fold predictions on the 252 training tests |
+|---|---|---|
+| LOW | < 18.4 | 125 tests, 6.4% actually kept burning (95% CI 3.3–12.1%) |
+| ELEVATED | 18.4–50 | 65 tests, 27.7% kept burning (18.3–39.6%) |
+| HIGH | ≥ 50 | 62 tests, 87.1% kept burning (76.6–93.3%) |
+
+The **alert threshold 18.4** is the largest score at which the model caught ≥ 90% of sustained-combustion tests
+in cross-validation (pooled out-of-fold predictions, 5 repeats).
+
+## Model
+
+- L2-regularised logistic regression (C = 1, scikit-learn), no hyperparameter tuning (tuning did not help, Phase 8).
+- Inputs: fuel (methanol / n-heptane), O₂ mole fraction, CO₂ mole fraction, He mole fraction, initial droplet
+  diameter, and a fuel × droplet-diameter interaction. Standardised inside the pipeline.
+- **Not inputs:** pressure (dropped, decision D-001), N₂ (redundant), anything measured during the burn.
+- Standardised coefficients (final fit): O₂ +2.29, heptane +0.58, droplet diameter +0.36,
+  heptane × diameter −1.51, CO₂ −0.54, He −0.62. These are associations in the FLEX test design, not causal effects;
+  O₂ and suppressant were varied together, so their separate coefficients are not individually reliable.
+
+## Training data
+
+NASA Physical Sciences Informatics, investigation PSI-69 (FLEX, ISS 2009–2011), DOI 10.60555/mbq8-0451, CC0-1.0.
+252 of 274 tests (80 sustained): excluded 9 tests at 2–3 atm, 12 without droplet diameter, 1 with invalid pressure.
+See `docs/data_card.md`.
+
+## Evaluation
+
+5 × repeated 5-fold cross-validation **grouped by chamber atmosphere** (tests sharing an atmosphere never split
+between training and test). Model selected by a pre-registered rule (lowest mean log loss, simplest within 1 SE).
+
+| Metric | Nested CV, mean ± sd over 25 folds | Pooled out-of-fold, 95% group-bootstrap CI |
+|---|---|---|
+| ROC-AUC | 0.925 ± 0.045 | 0.918 [0.870, 0.964] |
+| PR-AUC | 0.877 ± 0.081 | 0.847 [0.731, 0.939] |
+| Brier score | 0.103 ± 0.031 | 0.104 [0.068, 0.135] |
+| Recall on sustained (missed-fire rate = 1 − recall) | 0.900 ± 0.089 | 0.900 [0.812, 0.977] |
+| Precision at the alert threshold | 0.625 ± 0.122 | 0.567 [0.440, 0.704] |
+
+The nested column chooses the threshold inside each training fold and is the honest estimate of performance on
+new tests; the pooled column uses the single deployed threshold (chosen on the same out-of-fold predictions, so
+slightly optimistic for recall) and shows the uncertainty from resampling atmospheres.
+
+**Calibration:** out-of-fold mean prediction 0.314 vs observed 0.317; calibration slope 0.90–1.02 across repeats.
+No recalibration applied.
+
+**By subgroup** (pooled out-of-fold, deployed threshold):
+
+| Subgroup | Tests | Sustained | ROC-AUC | Recall | Missed fires |
+|---|---|---|---|---|---|
+| Heptane | 106 | 50 | 0.93 | 0.94 | 3 |
+| Methanol | 146 | 30 | 0.90 | **0.83** | 5 |
+| N₂ only | 94 | 40 | 0.93 | 0.90 | 4 |
+| CO₂ added | 111 | 31 | 0.90 | 0.90 | 3 |
+| He added | 47 | 9 | 0.91 | 0.89 | 1 |
+
+## Known limitations
+
+1. **Methanol fires are missed more often** (recall 0.83). Nine sustained tests are missed in at least 3 of 5 CV
+   repeats (six methanol); the four missed every time include three large methanol droplets (3.4–4.0 mm) that burned
+   to completion in CO₂-diluted atmospheres at O₂ 0.18–0.21 (`reports/phase9/consistently_missed_fires.csv`).
+2. **No separate suppressant effect.** Suppressant amount adds no measurable skill once O₂ is known (Phase 8
+   ablation). The model must not be read as "adding X% CO₂ lowers risk by Y".
+3. **Narrow scope.** Two fuels, single droplets, quiescent atmosphere, 0.7–1 atm, ambient temperature. No solid
+   materials, airflow, real cabin geometry or large fires. Conditions outside the training data are flagged by the
+   applicability-domain check (per-fuel ranges plus distance to the nearest tested atmosphere); stress tests showed
+   predictions there can be badly miscalibrated.
+4. **Small data.** 252 tests, 44 atmosphere groups; methanol with helium has only 2 sustained tests.
+5. **Adaptive test design.** NASA chose tests to locate extinction limits, so the data over-represents near-limit
+   conditions; the outcome rates are not real-world fire frequencies.
+
+## Files
+
+- `models/final_model.joblib` — pipeline, risk bands, applicability domain, metadata (`flameguard.prediction.FinalModel`)
+- `models/final_model.json` — human-readable metadata, bands and domain ranges
+- Produced by `scripts/finalize_model.py`; evidence in `notebooks/05_final_evaluation.ipynb` and `reports/phase9/`.

@@ -24,12 +24,17 @@ Details and known data issues: [docs/data_card.md](docs/data_card.md).
 | 5–6 Target, features, validation design | [notebooks/02_target_features_validation.ipynb](notebooks/02_target_features_validation.ipynb), [design](docs/target_features_validation.md) |
 | 7 Baseline models | [notebooks/03_baseline_models.ipynb](notebooks/03_baseline_models.ipynb), `reports/phase7/` |
 | 8 Tuning, ablation, sensitivity, stress tests | [notebooks/04_tuning_ablation_stress.ipynb](notebooks/04_tuning_ablation_stress.ipynb), `reports/phase8/`, [decision log](docs/decisions.md) |
+| 9 Final evaluation, risk bands, deployable model | [notebooks/05_final_evaluation.ipynb](notebooks/05_final_evaluation.ipynb), [model card](docs/model_card.md), `models/final_model.joblib` |
 
 **Final model (selected by a pre-registered rule):** L2 logistic regression on fuel, O₂, CO₂, He, initial droplet
 diameter and a fuel × droplet-size term; pressure was dropped (decision D-001). Cross-validated over 25 grouped folds:
 log loss 0.336, Brier 0.103, ROC-AUC 0.925, PR-AUC 0.877; at the recall-0.90 operating point, precision 0.625.
 These are model predictions on held-out FLEX tests, not experimental results. Valid only for methanol/n-heptane
 droplets at 0.7–1 atm within the tested O₂/suppressant ranges.
+
+**Fire Risk Score** = 100 × P(sustained), calibrated (slope 0.90–1.02). Bands from out-of-fold predictions:
+LOW < 18.4 (6% of tests kept burning), ELEVATED 18.4–50 (28%), HIGH ≥ 50 (87%). Every prediction is checked
+against the tested conditions and flagged when it is an extrapolation. Full details: [model card](docs/model_card.md).
 
 ## Setup
 
@@ -41,6 +46,7 @@ python scripts/download_flex.py # fetch raw NASA data (~43 MB, mostly the FLEX r
 python scripts/build_master.py  # clean -> data/processed/combustion_master.csv
 python scripts/train_baselines.py  # Phase 7 cross-validated models -> reports/phase7/
 python scripts/phase8_experiments.py  # Phase 8 tuning/ablation/sensitivity/stress -> reports/phase8/
+python scripts/finalize_model.py   # Phase 9 calibration, risk bands, final model -> models/, reports/phase9/
 python -m pytest                # run tests
 ```
 
