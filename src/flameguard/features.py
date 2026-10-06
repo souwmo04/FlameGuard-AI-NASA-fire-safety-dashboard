@@ -36,7 +36,13 @@ from sklearn.preprocessing import StandardScaler
 NUMERIC_FEATURES = ["x_o2", "x_co2", "x_he", "pressure_atm", "d0_mm"]
 FEATURE_SETS = {
     "base": ["is_heptane", *NUMERIC_FEATURES],
+    # ablations (Phase 8): each removes or adds one block of information
     "with_po2": ["is_heptane", *NUMERIC_FEATURES, "p_o2_atm"],
+    "no_pressure": ["is_heptane", "x_o2", "x_co2", "x_he", "d0_mm"],
+    "no_d0": ["is_heptane", "x_o2", "x_co2", "x_he", "pressure_atm"],
+    "no_suppressant": ["is_heptane", "x_o2", "pressure_atm", "d0_mm"],
+    "no_fuel": ["x_o2", "x_co2", "x_he", "pressure_atm", "d0_mm"],
+    "o2_fuel": ["is_heptane", "x_o2"],
 }
 
 # Physically motivated sign constraints for tree boosting (XGBoost monotone_constraints).
@@ -52,8 +58,8 @@ class FlexFeatures(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    feature_set : "base" or "with_po2"
-    interaction : add heptane_x_d0 (for linear models)
+    feature_set : a key of FEATURE_SETS
+    interaction : add heptane_x_d0 (for linear models; needs is_heptane and d0_mm in the set)
     """
 
     def __init__(self, feature_set: str = "base", interaction: bool = False):
@@ -66,6 +72,8 @@ class FlexFeatures(BaseEstimator, TransformerMixin):
         unknown = set(X["fuel"].dropna()) - {"Methanol", "Heptane"}
         if unknown:
             raise ValueError(f"Unknown fuels: {unknown}")
+        if self.interaction and not {"is_heptane", "d0_mm"} <= set(FEATURE_SETS[self.feature_set]):
+            raise ValueError(f"interaction needs is_heptane and d0_mm; feature_set {self.feature_set!r} lacks them")
         # centre for the interaction is learned from the training fold only
         self.d0_center_ = float(np.nanmean(X["d0_mm"]))
         self.feature_names_out_ = self._names()
@@ -82,7 +90,7 @@ class FlexFeatures(BaseEstimator, TransformerMixin):
         out["is_heptane"] = (X["fuel"] == "Heptane").astype(float)
         for col in NUMERIC_FEATURES:
             out[col] = X[col].astype(float)
-        if self.feature_set == "with_po2":
+        if "p_o2_atm" in self.feature_names_out_:
             out["p_o2_atm"] = out["x_o2"] * out["pressure_atm"]
         if self.interaction:
             # Unknown d0 (impute_d0 variant only) -> no size adjustment (0 = training-fold mean).
@@ -95,7 +103,8 @@ class FlexFeatures(BaseEstimator, TransformerMixin):
         return np.asarray(self.feature_names_out_, dtype=object)
 
 
-def make_preprocessor(model_kind: str, feature_set: str = "base", impute: bool = False) -> Pipeline:
+def make_preprocessor(model_kind: str, feature_set: str = "base", impute: bool = False,
+                      interaction: bool | None = None) -> Pipeline:
     """Preprocessing pipeline for a model family.
 
     model_kind:
@@ -103,11 +112,13 @@ def make_preprocessor(model_kind: str, feature_set: str = "base", impute: bool =
       "tree"   - raw features, no scaling (random forest, XGBoost)
     impute: median-impute missing values with missing-indicator columns, fitted per fold
             (only needed for the impute_d0 variant).
+    interaction: override whether heptane_x_d0 is added (default: linear models only).
     """
     if model_kind not in {"linear", "tree"}:
         raise ValueError("model_kind must be 'linear' or 'tree'")
     steps: list[tuple[str, object]] = [
-        ("features", FlexFeatures(feature_set=feature_set, interaction=model_kind == "linear")),
+        ("features", FlexFeatures(feature_set=feature_set,
+                                  interaction=(model_kind == "linear") if interaction is None else interaction)),
     ]
     if impute:
         steps.append(("impute", SimpleImputer(strategy="median", add_indicator=True)))
