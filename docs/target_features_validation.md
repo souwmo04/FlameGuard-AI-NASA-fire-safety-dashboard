@@ -1,6 +1,7 @@
 # Target, features and validation design (Phases 5–6)
 
-Fixed **before** any model is trained. Executed evidence: `notebooks/02_target_features_validation.ipynb`.
+Fixed **before** any model is trained. Later changes are recorded in [decisions.md](decisions.md)
+(D-001: pressure dropped from the final model after Phase 8). Executed evidence: `notebooks/02_target_features_validation.ipynb`.
 Code: `src/flameguard/dataset.py`, `features.py`, `validation.py`; tests in `tests/test_features_validation.py`.
 
 ## Target (Phase 5)
