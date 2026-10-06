@@ -15,6 +15,14 @@ Built for the NASA Space Apps Challenge 2026 — *Flame in Freefall*.
 
 Details and known data issues: [docs/data_card.md](docs/data_card.md).
 
+## Progress
+
+| Phase | Output |
+|---|---|
+| 1–3 Data discovery, download, cleaning | `data/processed/combustion_master.csv`, [data card](docs/data_card.md) |
+| 4 EDA | [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb), [findings](docs/eda_findings.md) |
+| 5–6 Target, features, validation design | [notebooks/02_target_features_validation.ipynb](notebooks/02_target_features_validation.ipynb), [design](docs/target_features_validation.md) |
+
 ## Setup
 
 ```bash
