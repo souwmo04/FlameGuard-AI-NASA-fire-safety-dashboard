@@ -22,6 +22,11 @@ Details and known data issues: [docs/data_card.md](docs/data_card.md).
 | 1–3 Data discovery, download, cleaning | `data/processed/combustion_master.csv`, [data card](docs/data_card.md) |
 | 4 EDA | [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb), [findings](docs/eda_findings.md) |
 | 5–6 Target, features, validation design | [notebooks/02_target_features_validation.ipynb](notebooks/02_target_features_validation.ipynb), [design](docs/target_features_validation.md) |
+| 7 Baseline models | [notebooks/03_baseline_models.ipynb](notebooks/03_baseline_models.ipynb), results in `reports/phase7/` |
+
+**Current best (cross-validated, grouped by atmosphere, 25 folds):** logistic regression, ROC-AUC 0.922 ± 0.050,
+PR-AUC 0.868 ± 0.087; at the recall-0.90 operating point, precision 0.637 ± 0.130. These are model predictions on
+held-out FLEX tests, not experimental results.
 
 ## Setup
 
@@ -31,6 +36,7 @@ python -m venv .venv
 pip install -r requirements.txt
 python scripts/download_flex.py # fetch raw NASA data (~43 MB, mostly the FLEX report PDF)
 python scripts/build_master.py  # clean -> data/processed/combustion_master.csv
+python scripts/train_baselines.py  # Phase 7 cross-validated models -> reports/phase7/
 python -m pytest                # run tests
 ```
 
@@ -46,6 +52,7 @@ notebooks/          exploration
 src/flameguard/     package: loading, cleaning, features, models, explainability, RAG
 dashboard/          Streamlit app
 models/             trained model artifacts
+reports/            cross-validation results per phase
 scripts/            data download and pipeline entry points
 tests/              unit tests
 ```
