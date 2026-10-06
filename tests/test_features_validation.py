@@ -4,7 +4,7 @@ import pytest
 
 from flameguard.data_loader import FLEX_TABLE_PATH
 from flameguard.dataset import MODEL_INPUTS, build_modeling_data
-from flameguard.features import FlexFeatures, make_preprocessor, monotone_constraints
+from flameguard.features import FEATURE_SETS as FEATURE_SETS_FOR_TEST, FlexFeatures, make_preprocessor, monotone_constraints
 from flameguard.schema import POST_OUTCOME_COLUMNS, TARGET
 from flameguard.validation import Split, check_splits, repeated_group_kfold, stress_splits
 
@@ -130,3 +130,40 @@ def test_check_splits_detects_group_leak_and_single_class():
     with pytest.raises(ValueError, match="only one class"):
         check_splits([Split("bad", np.array([1, 3]), np.array([0, 2]))], pd.Series([0, 1, 0, 1]),
                      pd.Series(["a", "b", "c", "d"]))
+
+
+# --- Phase 8 additions -----------------------------------------------------------
+
+@pytest.mark.parametrize("feature_set, expected", [
+    ("no_pressure", ["is_heptane", "x_o2", "x_co2", "x_he", "d0_mm"]),
+    ("no_suppressant", ["is_heptane", "x_o2", "pressure_atm", "d0_mm"]),
+    ("o2_fuel", ["is_heptane", "x_o2"]),
+])
+def test_ablation_feature_sets(feature_set, expected):
+    out = FlexFeatures(feature_set=feature_set).fit_transform(toy_inputs())
+    assert list(out.columns) == expected
+
+
+def test_interaction_requires_fuel_and_size():
+    with pytest.raises(ValueError, match="interaction needs"):
+        FlexFeatures(feature_set="no_d0", interaction=True).fit(toy_inputs())
+    assert "heptane_x_d0" not in make_preprocessor("linear", interaction=False).fit_transform(toy_inputs().dropna())
+
+
+@requires_master
+def test_exclude_anomalies_variant(master):
+    d = build_modeling_data(master, "exclude_anomalies")
+    assert not d.meta["test_id"].isin([70, 73]).any()
+    assert d.summary()["tests"] == 250
+
+
+def test_final_model_does_not_use_pressure():
+    from flameguard.model import FINAL_CANDIDATES, FINAL_FEATURE_SET
+
+    assert "pressure_atm" not in FEATURE_SETS_FOR_TEST[FINAL_FEATURE_SET]
+    X = toy_inputs().dropna()
+    for name, factory in FINAL_CANDIDATES.items():
+        est = factory()
+        pipe = est.estimator if hasattr(est, "estimator") else est
+        names = list(pipe.named_steps["pre"].fit(X).get_feature_names_out())
+        assert "pressure_atm" not in names, name

@@ -85,3 +85,27 @@ def test_cross_validate_never_trains_on_test_rows():
     cross_validate(Spy, data, splits, model_name="spy", select_threshold=False)
     for s, train_rows in zip(splits, seen):
         assert train_rows.isdisjoint(set(s.test))
+
+
+def test_grid_search_inner_folds_are_grouped():
+    from sklearn.model_selection import GridSearchCV
+    from flameguard.evaluation import fit_model
+    from flameguard.model import tuned_logreg
+
+    data = synthetic_data()
+    gs = tuned_logreg()
+    assert isinstance(gs, GridSearchCV)
+    fit_model(gs, data.X, data.y, data.groups)
+    g = data.groups.to_numpy()
+    for tr, te in gs.cv.split(data.X, data.y, data.groups):
+        assert not set(g[tr]) & set(g[te])
+    assert "model__C" in gs.best_params_
+
+
+def test_cross_validate_records_tuned_params():
+    from flameguard.model import tuned_logreg
+
+    data = synthetic_data()
+    splits = repeated_group_kfold(data.y, data.groups, n_splits=4, n_repeats=1)
+    folds, _ = cross_validate(tuned_logreg, data, splits, model_name="t")
+    assert folds["best_params"].str.contains("model__C").all()
