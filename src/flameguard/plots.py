@@ -100,3 +100,52 @@ def plot_leakage(leak: pd.DataFrame, metric: str = "roc_auc", label: str = "ROC-
     ax.set_title(f"{label}: grouped CV (filled) vs row-level CV ignoring atmospheres (hollow)")
     fig.tight_layout()
     return fig
+
+
+def plot_ablation(paired: pd.DataFrame, metric: str = "roc_auc", label: str = "ROC-AUC") -> plt.Figure:
+    """Paired change vs the full logistic model per ablation: mean ± sd over 25 folds."""
+    d = paired[paired["metric"] == metric].copy()
+    sign = -1 if metric == "log_loss" else 1
+    d["gain"] = sign * d["mean_delta_vs_full"]
+    d = d.sort_values("gain")
+    fig, ax = plt.subplots(figsize=(11, 3.9))
+    y = np.arange(len(d))
+    hurts = d["gain"] < 0
+    colors = np.where(hurts, MODEL_COLORS["logreg"], MUTED)
+    ax.errorbar(d["gain"], y, xerr=d["sd"], fmt="none", ecolor=AXIS, elinewidth=1.4, zorder=1)
+    ax.scatter(d["gain"], y, s=64, c=colors, edgecolors=SURFACE, linewidths=1.2, zorder=2)
+    for yi, (_, r) in zip(y, d.iterrows()):
+        ax.text(1.01, yi, f"better in {r['variant_better_folds']}/{r['folds']} folds", transform=ax.get_yaxis_transform(),
+                ha="left", va="center", fontsize=8.5, color=INK_2)
+    ax.axvline(0, color=INK_2, linewidth=1)
+    ax.set_yticks(y, d["variant"])
+    ax.set_xlabel(f"Change in {label} vs full model ({'lower log loss' if sign < 0 else 'higher'} = better), mean ± sd")
+    ax.grid(axis="y", visible=False)
+    ax.set_title(f"Feature ablation, logistic regression (25 grouped folds): what each input contributes")
+    fig.tight_layout()
+    return fig
+
+
+def plot_stress(stress: pd.DataFrame, reference: dict[str, float], metric: str = "roc_auc",
+                label: str = "ROC-AUC") -> plt.Figure:
+    """Stress-split metric per model, with the in-distribution grouped-CV mean as a reference tick."""
+    models = [m for m in MODEL_ORDER if m in set(stress["model"])]
+    splits = list(dict.fromkeys(stress["split"]))
+    fig, ax = plt.subplots(figsize=(11, 3.9))
+    width = 0.8 / len(models)
+    for k, m in enumerate(models):
+        vals = [stress[(stress["split"] == s) & (stress["model"] == m)][metric].iloc[0] for s in splits]
+        x = np.arange(len(splits)) + (k - (len(models) - 1) / 2) * width
+        ax.scatter(x, vals, s=70, color=MODEL_COLORS[m], edgecolors=SURFACE, linewidths=1.2, label=MODEL_LABELS[m],
+                   zorder=3)
+        for xi, v in zip(x, vals):
+            ax.text(xi, v + 0.015, f"{v:.2f}", ha="center", fontsize=7.5, color=INK_2)
+    ax.set_xticks(range(len(splits)), [s.replace("_", " ") for s in splits])
+    ax.set_ylim(0.5, 1.0)  # dots, not bars, so a non-zero baseline does not distort
+    ax.set_ylabel(label)
+    ref_txt = ", ".join(f"{MODEL_LABELS[m]} {v:.2f}" for m, v in reference.items())
+    ax.set_title(f"{label} on held-out conditions (in-distribution grouped CV: {ref_txt})", fontsize=10)
+    ax.grid(axis="x", visible=False)
+    ax.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize=9)
+    fig.tight_layout()
+    return fig
