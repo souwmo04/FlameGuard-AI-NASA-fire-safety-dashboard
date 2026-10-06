@@ -1,0 +1,10 @@
+test_id,flex_identifier,fuel,diluent,x_o2,x_co2,x_he,d0_mm,outcome_raw,p,missed_in_repeats,qc_flags
+151,C03M101,Methanol,CO2,0.18,0.15,0.0,3.86,Completion,0.0750011931142996,5,
+111,C10M303,Methanol,CO2,0.21,0.3,0.0,3.37,Completion,0.1085455455502263,5,d_ext_without_extinction
+112,C10M401,Methanol,CO2,0.21,0.3,0.0,3.99,Completion,0.13996943255769512,5,d_ext_without_extinction
+254,H11M102,Methanol,He,0.23,0.0,0.25,2.61,Disruption,0.15309244631436075,3,
+205,N01H102,Heptane,N2,0.21,0.0,0.0,3.58,Disruption,0.1537576802014487,4,
+204,N01H101,Heptane,N2,0.21,0.0,0.0,3.56,Disruption,0.16097971643801878,4,
+56,194F001,Heptane,N2,0.2,0.0,0.0,3.56,Completion,0.1684482484643636,5,d_ext_without_extinction
+1,20CAL08,Methanol,N2,0.21,0.0,0.0,1.69,Disruption,0.18347656212265445,4,d_ext_without_extinction
+168,C15M101,Methanol,CO2,0.21,0.15,0.0,3.03,Disruption,0.19092893340303416,3,d_ext_without_extinction
