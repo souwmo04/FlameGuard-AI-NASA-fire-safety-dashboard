@@ -200,3 +200,103 @@ def plot_risk_bands(avg: pd.DataFrame, bands) -> plt.Figure:
     ax.set_title("Fire Risk Score bands vs observed FLEX outcomes (each test predicted by a model that never saw it)")
     fig.tight_layout()
     return fig
+
+
+FUEL_COLORS = {"Heptane": "#4a3aa7", "Methanol": "#e87ba4"}  # CVD-validated pair, plus marker shape
+FUEL_MARKERS = {"Heptane": "^", "Methanol": "o"}
+
+
+def plot_global_importance(grouped: pd.DataFrame, detailed: pd.DataFrame) -> plt.Figure:
+    """Mean |SHAP| in Fire Risk points: grouped players (primary) and the per-gas split."""
+    fig, axes = plt.subplots(1, 2, figsize=(11, 3.4), gridspec_kw={"width_ratios": [1, 1.25]})
+    for ax, imp, title, color in [(axes[0], grouped, "Grouped (primary)", MODEL_COLORS["logreg"]),
+                                  (axes[1], detailed, "Detailed (O\u2082/CO\u2082/He split not individually reliable)",
+                                   "#86b6ef")]:
+        imp = imp.sort_values("mean_abs_points")
+        y = np.arange(len(imp))
+        ax.barh(y, imp["mean_abs_points"], height=0.6, color=color)
+        for yi, (v, s) in enumerate(zip(imp["mean_abs_points"], imp["share"])):
+            ax.text(v + 0.3, yi, f"{v:.1f} pts ({s:.0%})", va="center", fontsize=9, color=INK_2)
+        ax.set_yticks(y, imp.index)
+        ax.set_xlim(0, imp["mean_abs_points"].max() * 1.35)
+        ax.set_xlabel("Mean |contribution| (Fire Risk points)")
+        ax.grid(axis="y", visible=False)
+        ax.set_title(title, fontsize=10)
+    fig.suptitle("Which inputs move the model's Fire Risk most (SHAP, 252 FLEX tests)", x=0.01, ha="left",
+                 fontsize=12, fontweight="semibold")
+    fig.tight_layout()
+    return fig
+
+
+def plot_dependence(shap_grouped: pd.DataFrame, shap_symmetric: pd.DataFrame) -> plt.Figure:
+    """Contribution vs input value. Frames are reports/phase10 CSVs (inputs + 'phi: ...' columns)."""
+    from flameguard.eda import DILUENT_COLORS, DILUENT_LABELS, DILUENTS
+
+    g, sym = shap_grouped, shap_symmetric
+    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.1))
+    atm = "phi: atmosphere (O\u2082 + CO\u2082 + He)"
+    for dil in DILUENTS:
+        mask = g["diluent"] == dil
+        axes[0].scatter(g.loc[mask, "x_o2"], g.loc[mask, atm], s=30, color=DILUENT_COLORS[dil],
+                        edgecolors=SURFACE, linewidths=0.8, label=DILUENT_LABELS[dil])
+    axes[0].set(xlabel="O\u2082 mole fraction", ylabel="Contribution (Fire Risk points)", title="Atmosphere")
+    axes[0].legend(fontsize=8, loc="upper left")
+    for fuel in ["Methanol", "Heptane"]:
+        mask = g["fuel"] == fuel
+        axes[1].scatter(g.loc[mask, "d0_mm"], g.loc[mask, "phi: droplet size"], s=32, marker=FUEL_MARKERS[fuel],
+                        color=FUEL_COLORS[fuel], edgecolors=SURFACE, linewidths=0.8, label=fuel)
+    axes[1].set(xlabel="Initial droplet diameter (mm)", title="Droplet size (fuel-first): opposite per fuel")
+    axes[1].legend(fontsize=8, loc="upper right")
+    meth = g["fuel"] == "Methanol"
+    axes[2].scatter(g.loc[meth, "d0_mm"], sym.loc[meth, "phi: droplet size"], s=30, facecolors="none",
+                    edgecolors=MUTED, linewidths=1.1, label="standard SHAP (symmetric)")
+    axes[2].scatter(g.loc[meth, "d0_mm"], g.loc[meth, "phi: droplet size"], s=32, marker="o",
+                    color=FUEL_COLORS["Methanol"], edgecolors=SURFACE, linewidths=0.8, label="fuel-first (used)")
+    axes[2].set(xlabel="Initial droplet diameter (mm)", title="Methanol tests: why fuel-first")
+    axes[2].legend(fontsize=8, loc="upper left")
+    for ax in axes:
+        ax.axhline(0, color=AXIS, linewidth=1)
+    fig.suptitle("Explanation dependence: each dot is one FLEX test explained by the final model", x=0.01, ha="left",
+                 fontsize=12, fontweight="semibold")
+    fig.tight_layout()
+    return fig
+
+
+def plot_waterfall(row: pd.Series, title: str, ax: plt.Axes | None = None) -> plt.Figure:
+    """Base -> contributions -> prediction, in Fire Risk points (horizontal waterfall)."""
+    players = [c for c in row.index if c not in {"base", "fire_risk"}]
+    players = sorted(players, key=lambda p: abs(row[p]))
+    own = ax is None
+    if own:
+        fig, ax = plt.subplots(figsize=(6.5, 2.8))
+    else:
+        fig = ax.figure
+    start = row["base"]
+    for i, p in enumerate(players):
+        v = row[p]
+        color = "#e34948" if v > 0 else MODEL_COLORS["logreg"]  # diverging red/blue poles
+        ax.barh(i, v, left=start, height=0.55, color=color)
+        if v >= 0:
+            tx, ha = start + v + 1.2, "left"
+        elif start + v < 12:  # no room left of the bar: label to its right instead
+            tx, ha = start + 1.2, "left"
+        else:
+            tx, ha = start + v - 1.2, "right"
+        ax.text(tx, i, f"{v:+.1f}", va="center", ha=ha, fontsize=9, color=INK_2)
+        start += v
+    ax.set_yticks(range(len(players)), players)
+    ax.axvline(row["base"], color=MUTED, linewidth=1, linestyle=":")
+    ax.axvline(row["fire_risk"], color=INK_2, linewidth=1.4)
+    ax.text(row["base"], len(players) - 0.35, f"average test {row['base']:.0f}", fontsize=8, color=MUTED, ha="center")
+    from flameguard.explainability import format_risk
+
+    ax.text(min(max(row["fire_risk"], 12), 88), -0.75, f"prediction {format_risk(row['fire_risk'])}", fontsize=8.5,
+            color=INK_2, ha="center")
+    ax.set_xlim(-5, 105)
+    ax.set_ylim(-1, len(players))
+    ax.set_xlabel("Fire Risk (0\u2013100)")
+    ax.grid(axis="y", visible=False)
+    ax.set_title(title, fontsize=10)
+    if own:
+        fig.tight_layout()
+    return fig
