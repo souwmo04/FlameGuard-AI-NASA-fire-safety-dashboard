@@ -10,8 +10,8 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 from flameguard.prediction import BUNDLE_PATH  # noqa: E402
 
 APP = str(Path(__file__).resolve().parents[1] / "dashboard" / "app.py")
-PAGES = ["views/home.py", "views/explorer.py", "views/predictor.py", "views/ranking.py", "views/performance.py",
-         "views/about.py"]
+PAGES = ["views/home.py", "views/explorer.py", "views/suppressants.py", "views/predictor.py", "views/whatif.py",
+         "views/ranking.py", "views/performance.py", "views/about.py"]
 
 pytestmark = pytest.mark.skipif(not BUNDLE_PATH.exists(), reason="run scripts/finalize_model.py first")
 
@@ -91,3 +91,17 @@ def test_switching_fuel_keeps_sliders_inside_new_range():
     at.run()
     assert not at.exception
     assert at.slider(key="d0").value >= at.slider(key="d0").min
+
+
+def test_whatif_shows_both_scenarios_and_steps():
+    at = run("views/whatif.py")
+    assert not at.exception
+    metrics = {m.label: m.value for m in at.metric}
+    assert {"Scenario A", "Scenario B", "Change (B − A)"} <= set(metrics)
+    assert any("About suppressant changes" in i.value for i in at.info)  # default B adds CO2
+
+
+def test_suppressant_page_states_no_ranking():
+    at = run("views/suppressants.py")
+    assert not at.exception
+    assert any("do not establish a ranking" in md.value for md in at.markdown)

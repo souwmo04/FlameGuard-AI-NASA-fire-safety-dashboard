@@ -25,9 +25,11 @@ pages = {
     ],
     "NASA data (observed)": [
         st.Page("views/explorer.py", title="Experiment Explorer", icon=":material/science:"),
+        st.Page("views/suppressants.py", title="Suppressant Comparison", icon=":material/compare_arrows:"),
     ],
     "Model": [
         st.Page("views/predictor.py", title="Fire Risk Predictor", icon=":material/local_fire_department:"),
+        st.Page("views/whatif.py", title="What-if Analysis", icon=":material/tune:"),
         st.Page("views/ranking.py", title="Ranking", icon=":material/leaderboard:"),
         st.Page("views/performance.py", title="Model Performance", icon=":material/fact_check:"),
     ],
