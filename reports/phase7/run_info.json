@@ -1,0 +1,29 @@
+{
+  "data": {
+    "variant": "primary",
+    "tests": 252,
+    "sustained": 80,
+    "extinguished": 172,
+    "groups": 44,
+    "excluded": {
+      "missing_d0": 12,
+      "out_of_scope_pressure_2-3atm": 9,
+      "missing_pressure": 1
+    }
+  },
+  "cv": {
+    "scheme": "StratifiedGroupKFold",
+    "group": "group_id_atmosphere",
+    "n_splits": 5,
+    "n_repeats": 5,
+    "seed": 0
+  },
+  "threshold_rule": "largest threshold with inner grouped-CV recall >= 0.90 on the training fold",
+  "versions": {
+    "python": "3.12.10",
+    "sklearn": "1.9.1",
+    "xgboost": "3.4.1",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3"
+  }
+}
