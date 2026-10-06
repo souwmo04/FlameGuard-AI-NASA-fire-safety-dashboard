@@ -30,3 +30,6 @@ reports/**/log_*.txt
 frontend/node_modules/
 frontend/.next/
 frontend/.env*.local
+
+# Packaging metadata from pip install -e .
+*.egg-info/
