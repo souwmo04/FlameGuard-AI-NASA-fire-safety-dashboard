@@ -57,10 +57,6 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, open, close]);
 
-  useEffect(() => {
-    if (isOpen) requestAnimationFrame(() => inputRef.current?.focus());
-  }, [isOpen]);
-
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return q ? COMMANDS.filter((c) => c.keywords.includes(q) || c.label.toLowerCase().includes(q)) : COMMANDS;
@@ -117,6 +113,7 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
                 <Search className="size-4 text-ink-3" aria-hidden="true" />
                 <input
                   ref={inputRef}
+                  autoFocus
                   value={query}
                   onChange={(e) => {
                     setQuery(e.target.value);
