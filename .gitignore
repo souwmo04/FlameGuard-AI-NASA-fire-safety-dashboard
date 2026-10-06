@@ -19,3 +19,6 @@ data/interim/*
 # Secrets
 .env
 .streamlit/secrets.toml
+
+# Experiment run logs (timings only; results are in the CSVs)
+reports/**/log_*.txt
