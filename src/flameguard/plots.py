@@ -149,3 +149,54 @@ def plot_stress(stress: pd.DataFrame, reference: dict[str, float], metric: str =
     ax.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize=9)
     fig.tight_layout()
     return fig
+
+
+def plot_reliability(rel: pd.DataFrame, cal: pd.DataFrame) -> plt.Figure:
+    """Reliability diagram: mean predicted vs observed sustained rate per bin, 95% Wilson bars."""
+    fig, ax = plt.subplots(figsize=(5.6, 5.2))
+    ax.plot([0, 1], [0, 1], color=AXIS, linewidth=1, linestyle=":", zorder=1)
+    ax.errorbar(rel["mean_predicted"], rel["observed_rate"],
+                yerr=[rel["observed_rate"] - rel["ci_low"].clip(lower=0), rel["ci_high"] - rel["observed_rate"]],
+                fmt="o", color=MODEL_COLORS["logreg"], markersize=8, markeredgecolor=SURFACE, markeredgewidth=1.2,
+                elinewidth=1.2, capsize=0, zorder=3)
+    ax.set(xlim=(-0.02, 1.02), ylim=(-0.02, 1.02), xlabel="Mean predicted P(sustained) in bin",
+           ylabel="Observed share sustained")
+    s_lo, s_hi = cal["calibration_slope"].min(), cal["calibration_slope"].max()
+    ax.set_title("Calibration of the final model\n(out-of-fold, 8 equal-count bins)")
+    ax.text(0.02, 0.95, f"calibration slope {s_lo:.2f}\u2013{s_hi:.2f} across 5 CV repeats (1.00 = perfect)\n"
+            f"{int(rel['n'].min())}\u2013{int(rel['n'].max())} tests per bin; bars = 95% Wilson interval",
+            transform=ax.transAxes, va="top", fontsize=8.5, color=INK_2)
+    fig.tight_layout()
+    return fig
+
+
+def plot_risk_bands(avg: pd.DataFrame, bands) -> plt.Figure:
+    """Out-of-fold Fire Risk Score per test, split by actual outcome, with band boundaries."""
+    fig, ax = plt.subplots(figsize=(11, 3.6))
+    rng = np.random.default_rng(1)
+    for y, label, marker in [(0, "Extinguished (observed)", "o"), (1, "Sustained (observed)", "^")]:
+        g = avg[avg["y"] == y]
+        jitter = rng.uniform(-0.18, 0.18, len(g)) + y
+        if y == 1:
+            ax.scatter(100 * g["p"], jitter, s=34, marker=marker, color=MODEL_COLORS["logreg"], edgecolors=SURFACE,
+                       linewidths=0.8, label=label)
+        else:
+            ax.scatter(100 * g["p"], jitter, s=30, marker=marker, facecolors="none", edgecolors=MODEL_COLORS["logreg"],
+                       linewidths=1.1, label=label)
+    for x, name in [(100 * bands.alert_threshold, f"alert {100 * bands.alert_threshold:.1f}"),
+                    (100 * bands.high_threshold, "high 50")]:
+        ax.axvline(x, color=INK_2, linewidth=1, linestyle=(0, (3, 2)))
+        ax.text(x + 0.6, 1.42, name, fontsize=8.5, color=INK_2)
+    for lo, hi, name in [(0, 100 * bands.alert_threshold, "LOW"), (100 * bands.alert_threshold, 50, "ELEVATED"),
+                         (50, 100, "HIGH")]:
+        stats = bands.band_stats.get(name, {})
+        txt = name if not stats else f"{name}: {stats['observed_sustained_rate']:.0%} sustained (n={int(stats['tests'])})"
+        ax.text((lo + hi) / 2, -0.62, txt, ha="center", fontsize=9, color=INK_2)
+    ax.set_yticks([0, 1], ["Extinguished", "Sustained"])
+    ax.set_ylim(-0.8, 1.6)
+    ax.set_xlim(-1, 101)
+    ax.set_xlabel("Fire Risk Score (out-of-fold prediction, 0\u2013100)")
+    ax.grid(axis="y", visible=False)
+    ax.set_title("Fire Risk Score bands vs observed FLEX outcomes (each test predicted by a model that never saw it)")
+    fig.tight_layout()
+    return fig
