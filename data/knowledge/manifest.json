@@ -1,10 +1,10 @@
 {
   "embedding_model": "BAAI/bge-small-en-v1.5",
   "dimensions": 384,
-  "chunks": 385,
+  "chunks": 386,
   "per_source": {
     "nasa-tp-2015-216046": 336,
-    "README": 7,
+    "README": 8,
     "data_card": 9,
     "eda_findings": 4,
     "target_features_validation": 5,
@@ -15,7 +15,7 @@
   },
   "inputs": {
     "documents/flex/NASA-TP-2015-216046_FLEX_results_2009-2011.pdf": "b4f6ca983e2792c3",
-    "README.md": "bb5191122e807fd0",
+    "README.md": "cadd273162de7d4b",
     "docs/data_card.md": "7d797398e170786d",
     "docs/eda_findings.md": "d8758241ee878847",
     "docs/target_features_validation.md": "7e38793dc95ac033",
