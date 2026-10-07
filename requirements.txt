@@ -2,6 +2,10 @@
 # The API's runtime-only dependencies are in backend/requirements.txt.
 -r backend/requirements.txt
 
+# Research models compared in Phases 7-8 and the shap cross-check in tests
+xgboost>=2.1
+shap>=0.46
+
 # Visualization for notebooks / report figures
 matplotlib>=3.9
 

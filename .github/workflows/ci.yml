@@ -21,7 +21,7 @@ jobs:
           cache-dependency-path: backend/requirements.txt
       - name: Install
         run: |
-          pip install -r backend/requirements.txt matplotlib pytest
+          pip install -r backend/requirements.txt xgboost shap matplotlib pytest
           pip install -e .
       - name: Cache embedding model
         uses: actions/cache@v4

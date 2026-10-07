@@ -5,10 +5,9 @@
 pandas>=2.2
 numpy>=1.26
 
-# ML / explainability
+# ML (the deployed model is scikit-learn logistic regression; Shapley values are computed exactly in
+# flameguard.explainability, so neither XGBoost nor the shap package is needed at runtime)
 scikit-learn>=1.5
-xgboost>=2.1
-shap>=0.46
 joblib>=1.4
 
 # API
