@@ -18,6 +18,9 @@ LIMITATIONS = [
     "The model cannot separate a suppressant's effect from the oxygen reduction it was tested with.",
     "Methanol fires are missed more often (recall 0.83) than heptane fires (0.94).",
     "NASA chose tests to locate extinction limits, so outcome rates are not real-world fire frequencies.",
+    "Fuel-needle contamination: NASA attributes methanol disruptions probably to a needle coating "
+    "(NASA/TP-2015-216046, pp. 16-17). Disruption counts as sustained here, so methanol scores are uncertain; "
+    "each methanol prediction shows a contamination check (decision D-002).",
     "Research prototype; not a certified spacecraft fire-safety system.",
 ]
 
