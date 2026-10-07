@@ -15,10 +15,11 @@ interface SegmentedProps<T extends string> {
   value: T;
   options: Option<T>[];
   onChange: (value: T) => void;
+  accent?: "flame" | "plasma";
 }
 
 /** Accessible segmented control (radio group with roving focus and arrow-key navigation). */
-export function Segmented<T extends string>({ label, value, options, onChange }: SegmentedProps<T>) {
+export function Segmented<T extends string>({ label, value, options, onChange, accent = "flame" }: SegmentedProps<T>) {
   const id = useId();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -51,7 +52,8 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
               className={cn("relative z-10 rounded-lg px-2 py-2 text-sm font-medium transition", active ? "text-space-950" : "text-ink-2 hover:text-ink")}
             >
               {active && (
-                <motion.span layoutId={`${id}-thumb`} className="absolute inset-0 -z-10 rounded-lg bg-gradient-to-r from-flame to-ember"
+                <motion.span layoutId={`${id}-thumb`} className={cn("absolute inset-0 -z-10 rounded-lg bg-gradient-to-r",
+                  accent === "flame" ? "from-flame to-ember" : "from-[#0891b2] to-plasma")}
                   transition={{ type: "spring", stiffness: 420, damping: 34 }} />
               )}
               {o.label}
