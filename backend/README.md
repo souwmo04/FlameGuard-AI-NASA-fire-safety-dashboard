@@ -20,6 +20,11 @@ python -m uvicorn app.main:app --app-dir backend --reload --port 8000
 |---|---|---|
 | `FLAMEGUARD_ROOT` | repository root | folder containing `data/`, `models/`, `reports/` |
 | `FLAMEGUARD_CORS_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | browser origins allowed to call the API |
+| `FLAMEGUARD_LLM_API_KEY` | none (retrieval-only answers) | key for an OpenAI-compatible chat API — secret, set in `backend/.env` or the host's secret store |
+| `FLAMEGUARD_LLM_BASE_URL` | `https://api.groq.com/openai/v1` | chat API base URL (Groq free tier by default) |
+| `FLAMEGUARD_LLM_MODEL` | `llama-3.3-70b-versatile` | chat model |
+| `FLAMEGUARD_ASK_PER_MINUTE` | `6` | questions per client per minute |
+| `FLAMEGUARD_EMBED_CACHE` | `<root>/.cache/fastembed` | where the embedding model is cached |
 
 Data, model and reports are loaded once at startup (about 0.1 s); typical requests take 1–40 ms.
 
@@ -33,7 +38,7 @@ Every response says what kind of number it carries:
 | `prediction` | output of the trained model |
 | `estimate` | statistical summary fitted to observed tests (no ML model) |
 | `explanation` | Shapley attribution of a prediction |
-| `interpretation` | plain-language text filled from model outputs by a fixed template (no language model) |
+| `interpretation` | plain-language text: a fixed template filled from model outputs (`/api/predict`), or a language-model answer restricted to cited passages (`/api/ask`) |
 | `hypothetical` | conditions chosen by the user |
 | `evaluation` | cross-validated model performance |
 
@@ -54,6 +59,9 @@ Every response says what kind of number it carries:
 | GET | `/api/ranking/conditions` | tested atmospheres ranked by observed sustained rate (Wilson intervals) |
 | GET | `/api/suppressants` | observed series, O₂₅₀ estimates, comparisons and the data-driven conclusion |
 | POST | `/api/similar-experiments` | nearest tested conditions with similarity scores |
+| GET | `/api/ask/status` | Ask FlameGuard configuration: model, retrieval mode, indexed sources (never the key) |
+| POST | `/api/ask` | answer grounded in numbered passages from the NASA report and docs, with citation checks; rate-limited |
+| POST | `/api/ask/stream` | the same, streamed as server-sent events (`meta`, `token`…, `done`) |
 
 ### Conditions (request body for `/api/predict`, `/api/similar-experiments`, both scenarios of `/api/what-if`)
 

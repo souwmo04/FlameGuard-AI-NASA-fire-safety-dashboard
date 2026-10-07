@@ -35,8 +35,9 @@ Details and known data issues: [docs/data_card.md](docs/data_card.md).
 | Final evaluation, risk bands, deployable model | [notebooks/05_final_evaluation.ipynb](notebooks/05_final_evaluation.ipynb), [model card](docs/model_card.md), `models/final_model.joblib` |
 | Explainable AI (SHAP) | [notebooks/06_explainability_shap.ipynb](notebooks/06_explainability_shap.ipynb), `reports/phase10/` |
 | What-if and suppressant analysis | `src/flameguard/whatif.py`, `src/flameguard/suppressant.py`, [method and results](docs/whatif_and_suppressants.md), `reports/phase12/` |
-| **FastAPI backend** | [backend/](backend/README.md) — 13 endpoints, Pydantic schemas, provenance on every response |
-| Next.js frontend | next |
+| FastAPI backend | [backend/](backend/README.md) — 16 endpoints, Pydantic schemas, provenance on every response |
+| Next.js frontend | `frontend/` — Mission Control, Fire Risk with explanations, What-If Lab, Experiment Explorer, Risk Ranking, Suppressant Lab, Similar Tests |
+| **Ask FlameGuard (RAG)** | [how it works and free-API setup](docs/ask_flameguard.md) — answers cited from the NASA FLEX report and project docs, `data/knowledge/` |
 
 **Final model (selected by a pre-registered rule):** L2 logistic regression on fuel, O₂, CO₂, He, initial droplet
 diameter and a fuel × droplet-size term; pressure was dropped (decision D-001). Cross-validated over 25 grouped folds:
@@ -59,6 +60,10 @@ python -m uvicorn app.main:app --app-dir backend --reload --port 8000   # API + 
 python -m pytest                   # library + API tests
 ```
 
+Optional: for generated answers in Ask FlameGuard, copy `backend/.env.example` to `backend/.env` and add a free
+Groq (or Gemini) API key — see [docs/ask_flameguard.md](docs/ask_flameguard.md). Without a key the assistant
+returns the most relevant cited passages instead.
+
 Rebuild the pipeline from the raw NASA data (outputs are already committed):
 
 ```bash
@@ -69,6 +74,7 @@ python scripts/phase8_experiments.py   # tuning/ablation/sensitivity/stress -> r
 python scripts/finalize_model.py       # calibration, risk bands, final model -> models/, reports/phase9/
 python scripts/explain_model.py        # SHAP explanations -> reports/phase10/
 python scripts/suppressant_analysis.py # O2-50 per test series -> reports/phase12/
+python scripts/build_knowledge.py      # Ask FlameGuard passages + embeddings -> data/knowledge/
 ```
 
 ## Layout
