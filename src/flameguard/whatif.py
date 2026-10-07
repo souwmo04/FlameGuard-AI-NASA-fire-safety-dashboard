@@ -76,15 +76,20 @@ def sweep(model: FinalModel, baseline: dict, feature: str, values: np.ndarray) -
 
 def _supp_text(state: dict) -> str:
     if state["x_co2"] > 0:
-        return f"CO₂ {state['x_co2']:.2f}"
+        return f"CO₂ {_pct(state['x_co2'])}"
     if state["x_he"] > 0:
-        return f"He {state['x_he']:.2f}"
-    return "none"
+        return f"He {_pct(state['x_he'])}"
+    return "no suppressant"
+
+
+def _pct(fraction: float) -> str:
+    """Mole fraction as a percentage without spurious decimals (0.21 -> '21%', 0.185 -> '18.5%')."""
+    return f"{100 * fraction:.1f}".rstrip("0").rstrip(".") + "%"
 
 
 def _fmt(key: str, value) -> str:
     if key == "x_o2":
-        return f"O₂ {value:.2f}"
+        return f"O₂ {_pct(value)}"
     if key == "d0_mm":
         return f"{value:.2f} mm"
     return str(value)

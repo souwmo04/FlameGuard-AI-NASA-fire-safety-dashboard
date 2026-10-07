@@ -147,6 +147,7 @@ def test_what_if_path_and_sweep(client):
             "sweep": "oxygen", "sweep_points": 15}
     w = client.post("/api/what-if", json=body).json()
     assert [s["step"] for s in w["path"]] == ["baseline", "oxygen", "suppressant"]
+    assert [s["change"] for s in w["path"][1:]] == ["O₂ 21% → O₂ 18%", "no suppressant → CO₂ 10%"]
     assert w["delta"] == pytest.approx(w["b"]["fire_risk"] - w["a"]["fire_risk"], abs=0.11)
     assert sum(s["delta"] for s in w["path"]) == pytest.approx(w["delta"], abs=0.2)
     assert len(w["sweep"]["points"]) == 15 and w["sweep"]["unit"] == "% O₂"
