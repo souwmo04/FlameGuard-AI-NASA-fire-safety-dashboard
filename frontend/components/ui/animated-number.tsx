@@ -18,7 +18,9 @@ export function AnimatedNumber({ value, format = (n) => Math.round(n).toString()
   useMotionValueEvent(spring, "change", (latest) => setDisplay(format(latest)));
 
   useEffect(() => {
-    if (reduce) spring.jump(value);
+    // No animation frames run in a background tab, so a count-up would sit at 0 until the user
+    // returns: jump straight to the value instead (also for users who prefer reduced motion).
+    if (reduce || document.visibilityState === "hidden") spring.jump(value);
     else spring.set(value);
   }, [value, reduce, spring]);
 
