@@ -1,17 +1,9 @@
 import type { Metadata } from "next";
 
-import { ComingSoon } from "@/components/common/coming-soon";
+import { RankingView } from "@/components/ranking/ranking-view";
 
-export const metadata: Metadata = { title: "Fire Risk Ranking" };
+export const metadata: Metadata = { title: "Risk Ranking" };
 
 export default function Page() {
-  return (
-    <ComingSoon
-      eyebrow="Ranking"
-      title="Fire Risk Ranking"
-      subtitle="Which tests the model rates highest and lowest, and which tested conditions kept flames burning most often."
-      phase="Phase 11"
-      endpoints={["GET /api/ranking","GET /api/ranking/conditions"]}
-    />
-  );
+  return <RankingView />;
 }
