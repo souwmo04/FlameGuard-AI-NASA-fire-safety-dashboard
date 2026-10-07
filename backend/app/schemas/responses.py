@@ -417,3 +417,53 @@ class ModelInfoResponse(BaseModel):
     global_importance: list[ImportanceRow]
     consistently_missed_test_ids: list[int]
     limitations: list[str]
+
+
+# --- ask flameguard (retrieval-augmented answers) ---------------------------------------
+
+
+class AskRequest(BaseModel):
+    question: str = Field(min_length=3, max_length=500, description="A question about FLEX, the data or the model")
+
+
+class Passage(BaseModel):
+    n: int = Field(description="Citation number used in the answer, e.g. [2]")
+    kind: Literal["nasa", "project", "live"]
+    source_id: str
+    source_title: str
+    location: str
+    section: str
+    text: str
+    url: str
+    score: float
+
+
+class KnowledgeSource(BaseModel):
+    source_id: str
+    title: str
+    kind: Literal["nasa", "project", "live"]
+    chunks: int
+    url: str
+
+
+class AskStatus(BaseModel):
+    llm_configured: bool
+    provider: str | None
+    model: str | None
+    retrieval: Literal["hybrid", "keyword"]
+    embedding_model: str | None
+    chunks: int
+    sources: list[KnowledgeSource]
+    per_minute_limit: int
+
+
+class AskResponse(BaseModel):
+    provenance: Provenance = Provenance.INTERPRETATION
+    question: str
+    mode: Literal["llm", "retrieval_only", "no_match"]
+    answer: str | None = Field(description="Generated answer citing passages as [n]; null in retrieval-only mode")
+    model: str | None
+    passages: list[Passage]
+    cited: list[int]
+    warnings: list[str]
+    note: str

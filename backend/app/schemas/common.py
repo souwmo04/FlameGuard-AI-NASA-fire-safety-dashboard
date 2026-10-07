@@ -13,7 +13,7 @@ class Provenance(str, Enum):
     PREDICTION = "prediction"          # output of the trained model
     ESTIMATE = "estimate"              # statistical summary fitted to observed tests (no ML model)
     EXPLANATION = "explanation"        # Shapley attribution of a model prediction
-    INTERPRETATION = "interpretation"  # plain-language text generated from model outputs by a template
+    INTERPRETATION = "interpretation"  # plain-language text: template from model outputs, or cited LLM answer
     HYPOTHETICAL = "hypothetical"      # conditions chosen by the user
     EVALUATION = "evaluation"          # cross-validated model performance
 

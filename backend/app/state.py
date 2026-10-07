@@ -10,6 +10,7 @@ import pandas as pd
 from fastapi import Request
 
 from flameguard.dataset import build_modeling_data
+from flameguard.knowledge import KnowledgeIndex
 from flameguard.prediction import FinalModel
 
 from app.config import Settings
@@ -34,6 +35,7 @@ class AppState:
     data_sha256: str
     excluded: dict[int, str]      # test_id -> why it is outside the model's training scope
     cache: dict = field(default_factory=dict)  # lazily built, read-only derived views
+    knowledge: KnowledgeIndex | None = None    # Ask FlameGuard corpus (set at startup, see services/ask.py)
 
     @property
     def background(self) -> pd.DataFrame:

@@ -16,6 +16,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from app import __version__
 from app.api import api_router
 from app.config import Settings, get_settings
+from app.services.ask import load_knowledge
 from app.state import load_state
 
 DESCRIPTION = """
@@ -24,7 +25,7 @@ fire-safety insight.
 
 Every response states its **provenance**: `observed` (NASA measurement), `prediction` (trained model),
 `estimate` (statistical summary of observed tests), `explanation` (Shapley attribution),
-`interpretation` (template text from model outputs), `hypothetical` (user-set conditions) or
+`interpretation` (template text from model outputs, or a language-model answer restricted to cited passages), `hypothetical` (user-set conditions) or
 `evaluation` (cross-validated performance).
 
 Research prototype for the NASA Space Apps Challenge 2026 — not a certified fire-safety system.
@@ -36,7 +37,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        app.state.flameguard = load_state(settings)  # data + model loaded once
+        state = load_state(settings)  # data + model loaded once
+        state.knowledge = load_knowledge(settings)
+        app.state.flameguard = state
         yield
 
     app = FastAPI(title="FlameGuard AI API", version=__version__, description=DESCRIPTION, lifespan=lifespan)
