@@ -53,7 +53,7 @@ export const PROVENANCE: Record<Provenance, ProvenanceStyle> = {
   interpretation: {
     label: "AI interpretation",
     short: "Interpretation",
-    description: "Plain-language text generated from the model's outputs.",
+    description: "Plain-language text generated from model outputs or from cited sources — check it against them.",
     icon: MessageSquare,
     classes: "text-prov-interpretation border-prov-interpretation/30 bg-prov-interpretation/10",
   },

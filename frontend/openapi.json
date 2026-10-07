@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "FlameGuard AI API",
-    "description": "\nFlameGuard AI turns NASA's FLEX microgravity droplet-combustion experiments (ISS, 2009-2011) into\nfire-safety insight.\n\nEvery response states its **provenance**: `observed` (NASA measurement), `prediction` (trained model),\n`estimate` (statistical summary of observed tests), `explanation` (Shapley attribution),\n`interpretation` (template text from model outputs), `hypothetical` (user-set conditions) or\n`evaluation` (cross-validated performance).\n\nResearch prototype for the NASA Space Apps Challenge 2026 — not a certified fire-safety system.\n",
+    "description": "\nFlameGuard AI turns NASA's FLEX microgravity droplet-combustion experiments (ISS, 2009-2011) into\nfire-safety insight.\n\nEvery response states its **provenance**: `observed` (NASA measurement), `prediction` (trained model),\n`estimate` (statistical summary of observed tests), `explanation` (Shapley attribution),\n`interpretation` (template text from model outputs, or a language-model answer restricted to cited passages), `hypothetical` (user-set conditions) or\n`evaluation` (cross-validated performance).\n\nResearch prototype for the NASA Space Apps Challenge 2026 — not a certified fire-safety system.\n",
     "version": "1.0.0"
   },
   "paths": {
@@ -669,10 +669,279 @@
           }
         }
       }
+    },
+    "/api/ask/status": {
+      "get": {
+        "tags": [
+          "ask"
+        ],
+        "summary": "Is the assistant configured, and what does it search?",
+        "operationId": "ask_status_api_ask_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AskStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ask": {
+      "post": {
+        "tags": [
+          "ask"
+        ],
+        "summary": "Answer a question from the FLEX report and project docs",
+        "operationId": "ask_api_ask_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ask/stream": {
+      "post": {
+        "tags": [
+          "ask"
+        ],
+        "summary": "Same as /ask, streamed as server-sent events (meta, token*, done)",
+        "operationId": "ask_stream_api_ask_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AskRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Question",
+            "description": "A question about FLEX, the data or the model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "AskRequest"
+      },
+      "AskResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "interpretation"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "llm",
+              "retrieval_only",
+              "no_match"
+            ],
+            "title": "Mode"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer",
+            "description": "Generated answer citing passages as [n]; null in retrieval-only mode"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "passages": {
+            "items": {
+              "$ref": "#/components/schemas/Passage"
+            },
+            "type": "array",
+            "title": "Passages"
+          },
+          "cited": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Cited"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "mode",
+          "answer",
+          "model",
+          "passages",
+          "cited",
+          "warnings",
+          "note"
+        ],
+        "title": "AskResponse"
+      },
+      "AskStatus": {
+        "properties": {
+          "llm_configured": {
+            "type": "boolean",
+            "title": "Llm Configured"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "retrieval": {
+            "type": "string",
+            "enum": [
+              "hybrid",
+              "keyword"
+            ],
+            "title": "Retrieval"
+          },
+          "embedding_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Model"
+          },
+          "chunks": {
+            "type": "integer",
+            "title": "Chunks"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeSource"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "per_minute_limit": {
+            "type": "integer",
+            "title": "Per Minute Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "llm_configured",
+          "provider",
+          "model",
+          "retrieval",
+          "embedding_model",
+          "chunks",
+          "sources",
+          "per_minute_limit"
+        ],
+        "title": "AskStatus"
+      },
       "BandEvidence": {
         "properties": {
           "provenance": {
@@ -1698,6 +1967,44 @@
         ],
         "title": "InterpretationPoint"
       },
+      "KnowledgeSource": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "nasa",
+              "project",
+              "live"
+            ],
+            "title": "Kind"
+          },
+          "chunks": {
+            "type": "integer",
+            "title": "Chunks"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "title",
+          "kind",
+          "chunks",
+          "url"
+        ],
+        "title": "KnowledgeSource"
+      },
       "MetricWithInterval": {
         "properties": {
           "name": {
@@ -2022,6 +2329,65 @@
           "sustained_probability"
         ],
         "title": "OutOfFoldPrediction"
+      },
+      "Passage": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N",
+            "description": "Citation number used in the answer, e.g. [2]"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "nasa",
+              "project",
+              "live"
+            ],
+            "title": "Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_title": {
+            "type": "string",
+            "title": "Source Title"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location"
+          },
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "kind",
+          "source_id",
+          "source_title",
+          "location",
+          "section",
+          "text",
+          "url",
+          "score"
+        ],
+        "title": "Passage"
       },
       "PathStep": {
         "properties": {

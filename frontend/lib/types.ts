@@ -38,3 +38,7 @@ export type SeriesEstimate = Schemas["SeriesEstimate"];
 export type SeriesComparison = Schemas["SeriesComparison"];
 export type SuppressantObservation = Schemas["ObservedPoint"];
 export type SimilarItem = Schemas["SimilarItem"];
+
+export type AskStatus = Schemas["AskStatus"];
+export type AskResponse = Schemas["AskResponse"];
+export type Passage = Schemas["Passage"];

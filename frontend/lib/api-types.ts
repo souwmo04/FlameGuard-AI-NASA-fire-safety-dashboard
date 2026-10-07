@@ -225,10 +225,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ask/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Is the assistant configured, and what does it search? */
+        get: operations["ask_status_api_ask_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer a question from the FLEX report and project docs */
+        post: operations["ask_api_ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ask/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Same as /ask, streamed as server-sent events (meta, token*, done) */
+        post: operations["ask_stream_api_ask_stream_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AskRequest */
+        AskRequest: {
+            /**
+             * Question
+             * @description A question about FLEX, the data or the model
+             */
+            question: string;
+        };
+        /** AskResponse */
+        AskResponse: {
+            /** @default interpretation */
+            provenance: components["schemas"]["Provenance"];
+            /** Question */
+            question: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "llm" | "retrieval_only" | "no_match";
+            /**
+             * Answer
+             * @description Generated answer citing passages as [n]; null in retrieval-only mode
+             */
+            answer: string | null;
+            /** Model */
+            model: string | null;
+            /** Passages */
+            passages: components["schemas"]["Passage"][];
+            /** Cited */
+            cited: number[];
+            /** Warnings */
+            warnings: string[];
+            /** Note */
+            note: string;
+        };
+        /** AskStatus */
+        AskStatus: {
+            /** Llm Configured */
+            llm_configured: boolean;
+            /** Provider */
+            provider: string | null;
+            /** Model */
+            model: string | null;
+            /**
+             * Retrieval
+             * @enum {string}
+             */
+            retrieval: "hybrid" | "keyword";
+            /** Embedding Model */
+            embedding_model: string | null;
+            /** Chunks */
+            chunks: number;
+            /** Sources */
+            sources: components["schemas"]["KnowledgeSource"][];
+            /** Per Minute Limit */
+            per_minute_limit: number;
+        };
         /** BandEvidence */
         BandEvidence: {
             /** @default evaluation */
@@ -634,6 +742,22 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** KnowledgeSource */
+        KnowledgeSource: {
+            /** Source Id */
+            source_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "nasa" | "project" | "live";
+            /** Chunks */
+            chunks: number;
+            /** Url */
+            url: string;
+        };
         /** MetricWithInterval */
         MetricWithInterval: {
             /** Name */
@@ -745,6 +869,33 @@ export interface components {
             risk_level: components["schemas"]["RiskLevel"];
             /** Sustained Probability */
             sustained_probability: number;
+        };
+        /** Passage */
+        Passage: {
+            /**
+             * N
+             * @description Citation number used in the answer, e.g. [2]
+             */
+            n: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "nasa" | "project" | "live";
+            /** Source Id */
+            source_id: string;
+            /** Source Title */
+            source_title: string;
+            /** Location */
+            location: string;
+            /** Section */
+            section: string;
+            /** Text */
+            text: string;
+            /** Url */
+            url: string;
+            /** Score */
+            score: number;
         };
         /** PathStep */
         PathStep: {
@@ -1459,6 +1610,90 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SimilarResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_status_api_ask_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskStatus"];
+                };
+            };
+        };
+    };
+    ask_api_ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_stream_api_ask_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

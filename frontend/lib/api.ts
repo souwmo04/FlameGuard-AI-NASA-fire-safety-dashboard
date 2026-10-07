@@ -73,6 +73,7 @@ export const post = <T>(path: string, body: unknown) =>
 /** Endpoint paths, used as SWR cache keys. */
 export const endpoints = {
   health: "/api/health",
+  askStatus: "/api/ask/status",
   stats: "/api/stats",
   sources: "/api/sources",
   domain: "/api/domain",
