@@ -1,6 +1,7 @@
 "use client";
 
 import { Info, Loader2, Radar, RefreshCw, Zap } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
@@ -16,6 +17,7 @@ import { api, endpoints, type ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { describeConditions } from "@/lib/conditions";
 import { REFERENCE_SCENARIO, saveLastAnalysis } from "@/lib/last-analysis";
+import { conditionsFromQuery } from "@/lib/scenario-url";
 import type { Conditions, DomainResponse, Fuel, ModelInfoResponse, SimilarResponse, StatsResponse } from "@/lib/types";
 
 import { ContributionWaterfall } from "./contribution-waterfall";
@@ -31,8 +33,11 @@ export function FireRiskAnalyzer() {
   const domain = useApi<DomainResponse>(endpoints.domain);
   const stats = useApi<StatsResponse>(endpoints.stats);
   const model = useApi<ModelInfoResponse>(endpoints.model);
-  const [form, setForm] = useState<Conditions>(REFERENCE_SCENARIO);
-  const [submitted, setSubmitted] = useState<Conditions | null>(null);
+  // Linked conditions (?fuel=…&o2=…) pre-fill the form and are analysed straight away.
+  const params = useSearchParams();
+  const [linked] = useState(() => conditionsFromQuery(params));
+  const [form, setForm] = useState<Conditions>(linked ?? REFERENCE_SCENARIO);
+  const [submitted, setSubmitted] = useState<Conditions | null>(linked);
 
   const prediction = usePredict(submitted);
   const similar = useSWR<SimilarResponse, ApiError>(

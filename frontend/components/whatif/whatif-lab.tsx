@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowLeftRight, Copy, Droplet, FlaskConical, History, Info, Repeat, Wind, type LucideIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Panel } from "@/components/dashboard/panel";
@@ -15,6 +16,7 @@ import { useWhatIf, type SweepFeature } from "@/hooks/use-what-if";
 import { endpoints } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { REFERENCE_SCENARIO, useLastAnalysis } from "@/lib/last-analysis";
+import { conditionsFromQuery } from "@/lib/scenario-url";
 import type { Conditions, DomainResponse, ExperimentList, Fuel, StatsResponse } from "@/lib/types";
 
 import { ComparisonHero } from "./comparison-hero";
@@ -50,11 +52,14 @@ const chip = "inline-flex items-center gap-1.5 rounded-lg border border-white/10
 export function WhatIfLab() {
   const domain = useApi<DomainResponse>(endpoints.domain);
   const stats = useApi<StatsResponse>(endpoints.stats);
-  const tests = useApi<ExperimentList>(`${endpoints.experiments}?in_model_scope=true&limit=300`);
+  const tests = useApi<ExperimentList>(`${endpoints.experiments}?limit=300`);
   const last = useLastAnalysis();
 
-  const [a, setA] = useState<Conditions>(REFERENCE_SCENARIO);
-  const [b, setB] = useState<Conditions>(DEFAULT_B);
+  // Linked conditions (?fuel=…&o2=…) become scenario A, with B starting as a copy to modify.
+  const params = useSearchParams();
+  const [linked] = useState(() => conditionsFromQuery(params));
+  const [a, setA] = useState<Conditions>(linked ?? REFERENCE_SCENARIO);
+  const [b, setB] = useState<Conditions>(linked ?? DEFAULT_B);
   const [feature, setFeature] = useState<SweepFeature>("oxygen");
   const [observedFor, setObservedFor] = useState<ScenarioKey | "off">("a");
 
@@ -66,7 +71,7 @@ export function WhatIfLab() {
   const alert = stats.data?.model.alert_threshold_score ?? 18.4;
 
   const observedConditions = observedFor === "a" ? da : observedFor === "b" ? db : null;
-  const observed = observedConditions && tests.data ? comparableTests(tests.data.items, observedConditions, feature) : [];
+  const observed = observedConditions && tests.data ? comparableTests(tests.data.items.filter((e) => e.in_model_scope), observedConditions, feature) : [];
 
   const editor = (which: ScenarioKey, value: Conditions, onChange: (c: Conditions) => void) => (
     <Panel
