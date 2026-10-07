@@ -28,7 +28,7 @@ jobs:
         with:
           path: .cache/fastembed
           key: fastembed-bge-small-en-v1.5
-      - name: Test (no language-model key: Ask FlameGuard runs offline with a fake model)
+      - name: "Test (no language-model key needed; Ask FlameGuard tests use a fake model)"
         run: python -m pytest -q
 
   frontend:
