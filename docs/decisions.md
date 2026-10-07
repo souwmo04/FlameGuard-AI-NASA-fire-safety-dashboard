@@ -39,3 +39,37 @@ statement about pressure, and predictions outside 0.7–1 atm are not offered.
 nested-CV-tuned) were re-evaluated without pressure on the same 25 grouped splits, and the pre-registered selection
 rule (lowest mean log loss; simplest model within one standard error) was applied unchanged to that set
 (`final_selection.csv`).
+
+## D-002 · Fuel-needle contamination: keep the model, show a methanol contamination check (2026-10-07)
+
+**Finding.** NASA/TP-2015-216046 (§5.2, pp. 16–17) reports that a conformal coating on the fuel-dispensing needles
+dissolved or flaked into the droplets in all tests in this dataset. NASA states that disruptive extinction of
+methanol "is probably due to the presence of the contaminant". For heptane, NASA draws no conclusion, because later
+clean-needle tests also disrupted. FlameGuard's target counts disruption as sustained burning.
+
+**Evidence** (`scripts/contamination_sensitivity.py` → `reports/phase14/`; same model and 5 × 5 grouped CV):
+
+| Variant | Tests | Sustained (methanol / heptane) | ROC-AUC | PR-AUC | Methanol PR-AUC |
+|---|---|---|---|---|---|
+| primary (deployed) | 252 | 80 (30 / 50) | 0.925 | 0.877 | 0.714 |
+| without methanol disruptions | 230 | 58 (8 / 50) | 0.940 | 0.894 | 0.438 |
+| without any disruptions | 199 | 27 (8 / 19) | 0.907 | 0.735 | 0.406 |
+
+| Fire Risk, 3 mm droplet | primary | without methanol disruptions |
+|---|---|---|
+| heptane, air | 56.4 | 54.6 |
+| heptane, 18% O₂ + 15% CO₂ | 14.9 | 17.3 |
+| methanol, air | 28.7 | 8.4 |
+| methanol, 25% O₂ | 72.9 | 33.6 |
+
+**Reading.** Heptane conclusions are stable. Methanol scores are not: most methanol "sustained" outcomes are
+disruptions, and only 8 methanol tests burned to completion, so methanol has little uncontested evidence either way.
+
+**Decision (interim, pending the project owner).** The deployed model and its pre-registered target are unchanged.
+Changing the target is the owner's call, as with D-001. For every methanol prediction, the API refits the same
+model without methanol disruptions at start-up and reports that score as `evidence.contamination_check`. The
+interpretation adds a "data caveat" statement, and the Fire Risk page shows both numbers. The Science page and the
+data and model cards describe the issue.
+
+**Revisit if** cleaner (post-2011) FLEX data with uncoated needles becomes available, or if the owner decides to
+redefine the target.
