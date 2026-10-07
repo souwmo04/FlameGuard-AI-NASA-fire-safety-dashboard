@@ -10,6 +10,10 @@ primary             Main model. y = 1 for Completion or Disruption, 0 for Extinc
                     Scope 0.7-1 atm; tests with any missing model input are excluded.
 exclude_disruption  Sensitivity: drop Disruption tests (y = 1 means Completion only).
                     Checks that conclusions do not hinge on labelling disruption as sustained.
+exclude_methanol_disruption
+                    Sensitivity (D-002): drop methanol Disruption tests only. NASA attributes
+                    methanol disruptions probably to fuel-needle contamination (NASA/TP-2015-216046,
+                    pp. 16-17); for heptane it draws no conclusion, so heptane disruptions stay.
 impute_d0           Sensitivity: keep tests without an initial droplet diameter; the
                     model pipeline imputes it inside each training fold (plus a missing flag).
 exclude_anomalies   Sensitivity: also drop tests 70 and 73 (duplicate identifier/time in the
@@ -24,7 +28,7 @@ import pandas as pd
 
 from flameguard.schema import TARGET
 
-VARIANTS = ("primary", "exclude_disruption", "impute_d0", "exclude_anomalies")
+VARIANTS = ("primary", "exclude_disruption", "exclude_methanol_disruption", "impute_d0", "exclude_anomalies")
 
 # Pressure bands with enough tests to learn from. The 2-3 atm tests are a single
 # CO2 series (O2 0.21, CO2 0.70); a model cannot separate pressure from CO2 there.
@@ -79,6 +83,9 @@ def build_modeling_data(master: pd.DataFrame, variant: str = "primary") -> Model
         exclude(df["d0_mm"].isna(), "missing_d0")
     if variant == "exclude_disruption":
         exclude(df["outcome_raw"] == "Disruption", "disruption_excluded_by_variant")
+    if variant == "exclude_methanol_disruption":
+        exclude((df["outcome_raw"] == "Disruption") & (df["fuel"] == "Methanol"),
+                "methanol_disruption_excluded_by_variant")
     if variant == "exclude_anomalies":
         exclude(df["qc_flags"].str.contains("duplicate_identifier"), "anomalous_test_excluded_by_variant")
 
