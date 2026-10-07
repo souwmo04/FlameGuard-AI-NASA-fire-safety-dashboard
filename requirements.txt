@@ -5,6 +5,9 @@
 # Visualization for notebooks / report figures
 matplotlib>=3.9
 
+# Rebuilding the Ask FlameGuard corpus from the NASA report (scripts/build_knowledge.py)
+pypdf>=5
+
 # Notebooks
 jupyterlab>=4.2
 

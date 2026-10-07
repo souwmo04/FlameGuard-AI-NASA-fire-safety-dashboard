@@ -33,3 +33,6 @@ frontend/.env*.local
 
 # Packaging metadata from pip install -e .
 *.egg-info/
+
+# Embedding model weights (downloaded by fastembed on first use)
+.cache/
