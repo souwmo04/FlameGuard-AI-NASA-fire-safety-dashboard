@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   },
   description:
     "Transforming NASA microgravity combustion experiments into explainable, evidence-labelled fire-safety insights. NASA Space Apps Challenge 2026.",
+  applicationName: "FlameGuard AI",
+  keywords: ["NASA", "FLEX", "microgravity combustion", "fire safety", "International Space Station", "explainable AI"],
+  openGraph: {
+    title: "FlameGuard AI — Fire Safety Intelligence for Space Exploration",
+    description: "NASA FLEX microgravity droplet-combustion data turned into calibrated, explainable and fully cited fire-safety insight.",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {

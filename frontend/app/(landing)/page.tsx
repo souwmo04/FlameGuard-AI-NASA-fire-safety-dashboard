@@ -1,4 +1,4 @@
-import { ArrowRight, Brain, FlaskConical, Gauge, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Brain, BrainCircuit, Earth, FlaskConical, Gauge, GitCompareArrows, Radar, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 
 import { Brand } from "@/components/layout/brand";
@@ -17,6 +17,10 @@ const CAPABILITIES = [
   { icon: Brain, title: "Calibrated risk", text: "A model validated on tests it never saw, with risk bands tied to how often flames really kept burning.", href: "/risk" },
   { icon: Gauge, title: "Explainable", text: "Each prediction decomposed into what pushed the risk up or down — and flagged when it is an extrapolation.", href: "/risk" },
   { icon: SlidersHorizontal, title: "What-if lab", text: "Change oxygen, suppressant or droplet size and watch the predicted behaviour respond, step by step.", href: "/what-if" },
+  { icon: GitCompareArrows, title: "Suppressant lab", text: "Nitrogen, CO₂ and helium compared on observed tests only — with an honest verdict when the data cannot rank them.", href: "/suppressants" },
+  { icon: Radar, title: "Similar tests", text: "Describe a droplet and see the closest real ISS tests and what actually happened to them.", href: "/similar" },
+  { icon: BrainCircuit, title: "Ask FlameGuard", text: "Questions answered from NASA's FLEX report and the project's documents, with every claim cited.", href: "/knowledge" },
+  { icon: Earth, title: "The science", text: "Why flames behave differently in microgravity, explained with page-level links to the NASA report.", href: "/science" },
 ];
 
 const LEGEND: Provenance[] = ["observed", "prediction", "estimate", "explanation", "interpretation", "hypothetical"];
