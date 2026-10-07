@@ -34,7 +34,7 @@ export function Panel({ title, provenance, description, actions, children, class
             <h2 className="font-display text-base font-semibold tracking-tight text-ink">{title}</h2>
             {description && <p className="text-xs text-ink-3">{description}</p>}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
             {actions}
             {provenance && <ProvenanceBadge kind={provenance} compact />}
           </div>

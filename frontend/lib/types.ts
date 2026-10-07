@@ -31,3 +31,9 @@ export type RankingResponse = Schemas["RankingResponse"];
 export type ConditionRankingResponse = Schemas["ConditionRankingResponse"];
 export type SuppressantsResponse = Schemas["SuppressantsResponse"];
 export type SimilarResponse = Schemas["SimilarResponse"];
+
+export type RankingItem = Schemas["RankingItem"];
+export type ConditionRank = Schemas["ConditionRank"];
+export type SeriesEstimate = Schemas["SeriesEstimate"];
+export type SeriesComparison = Schemas["SeriesComparison"];
+export type SuppressantObservation = Schemas["ObservedPoint"];
