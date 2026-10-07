@@ -8,6 +8,7 @@ sdk: docker
 app_port: 8000
 pinned: false
 short_description: NASA FLEX microgravity fire-safety API
+license: mit
 ---
 
 # FlameGuard AI
@@ -112,3 +113,8 @@ reports/            cross-validation and analysis results per phase
 scripts/            pipeline entry points
 tests/              library tests (API tests live in backend/tests/)
 ```
+
+## License
+
+Code and documentation: [MIT](LICENSE). The NASA FLEX data (PSI-69) is CC0-1.0 (public domain), and the NASA FLEX
+results report (NASA/TP-2015-216046) is cleared for public use; both remain credited to NASA.
