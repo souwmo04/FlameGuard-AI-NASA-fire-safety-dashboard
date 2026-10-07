@@ -142,6 +142,7 @@ def _slug(heading: str) -> str:
 def chunks_from_markdown(path: Path, rel: str, title: str) -> list[Chunk]:
     """Chunk a markdown document by headings; long sections are split with overlap."""
     text = path.read_text(encoding="utf-8")
+    text = re.sub(r"\A---\n.*?\n---\n", "", text, flags=re.DOTALL)  # YAML front matter (hosting config)
     text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)        # code blocks are not prose
     text = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", text)               # images
     sections: list[tuple[str, list[str]]] = [("Introduction", [])]
