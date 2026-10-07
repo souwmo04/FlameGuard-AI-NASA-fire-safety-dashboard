@@ -1,11 +1,11 @@
 "use client";
 
 import { Info, Loader2, Radar, RefreshCw, Zap } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
 import { Panel } from "@/components/dashboard/panel";
+import { ConditionsFields } from "@/components/scenario/conditions-fields";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProvenanceBadge } from "@/components/ui/provenance-badge";
 import { RiskBadge } from "@/components/ui/risk-badge";
@@ -16,18 +16,15 @@ import { api, endpoints, type ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { describeConditions } from "@/lib/conditions";
 import { REFERENCE_SCENARIO, saveLastAnalysis } from "@/lib/last-analysis";
-import type { Conditions, DomainResponse, Fuel, ModelInfoResponse, SimilarResponse, StatsResponse, Suppressant } from "@/lib/types";
+import type { Conditions, DomainResponse, Fuel, ModelInfoResponse, SimilarResponse, StatsResponse } from "@/lib/types";
 
 import { ContributionWaterfall } from "./contribution-waterfall";
 import { EvidencePanel } from "./evidence-panel";
 import { InterpretationCard } from "./interpretation-card";
 import { NearestTests } from "./nearest-tests";
-import { ParameterSlider } from "./parameter-slider";
 import { ProbabilityBars } from "./probability-bars";
 import { RiskGauge } from "./risk-gauge";
-import { Segmented } from "./segmented";
 
-const clamp = (v: number, [lo, hi]: readonly [number, number]) => Math.min(hi, Math.max(lo, v));
 const same = (a: Conditions, b: Conditions) => JSON.stringify(a) === JSON.stringify(b);
 
 export function FireRiskAnalyzer() {
@@ -50,30 +47,9 @@ export function FireRiskAnalyzer() {
   }, [prediction.data]);
 
   const ranges = domain.data?.fuels[form.fuel as Fuel];
-  const suppMax = ranges ? (form.suppressant === "CO2" ? ranges.co2_percent[1] : ranges.he_percent[1]) : 50;
   const stale = !!submitted && !!prediction.data && !same(form, submitted);
   const alert = stats.data?.model.alert_threshold_score ?? 18.4;
   const result = prediction.data;
-
-  const update = (patch: Partial<Conditions>) => setForm((f) => ({ ...f, ...patch }));
-
-  const changeFuel = (fuel: Fuel) => {
-    const r = domain.data?.fuels[fuel];
-    setForm((f) => {
-      if (!r) return { ...f, fuel };
-      const maxSupp = f.suppressant === "CO2" ? r.co2_percent[1] : r.he_percent[1];
-      return {
-        ...f,
-        fuel,
-        oxygen_percent: clamp(f.oxygen_percent, r.oxygen_percent),
-        droplet_diameter_mm: clamp(f.droplet_diameter_mm, r.droplet_diameter_mm),
-        suppressant_percent: f.suppressant === "none" ? 0 : Math.min(f.suppressant_percent ?? 0, maxSupp),
-      };
-    });
-  };
-
-  const changeSuppressant = (s: Suppressant) =>
-    setForm((f) => ({ ...f, suppressant: s, suppressant_percent: s === "none" ? 0 : f.suppressant_percent || 10 }));
 
   const analyze = () => setSubmitted({ ...form });
 
@@ -109,54 +85,7 @@ export function FireRiskAnalyzer() {
                 analyze();
               }}
             >
-              <Segmented<Fuel>
-                label="Fuel"
-                value={form.fuel as Fuel}
-                onChange={changeFuel}
-                options={[{ value: "Methanol", label: "Methanol" }, { value: "Heptane", label: "n-Heptane" }]}
-              />
-              <ParameterSlider
-                label="Oxygen"
-                value={form.oxygen_percent}
-                min={ranges.oxygen_percent[0]}
-                max={ranges.oxygen_percent[1]}
-                step={0.5}
-                unit="% O₂"
-                digits={1}
-                note="air ≈ 21%"
-                onChange={(v) => update({ oxygen_percent: v })}
-              />
-              <Segmented<Suppressant>
-                label="Suppressant added"
-                value={(form.suppressant ?? "none") as Suppressant}
-                onChange={changeSuppressant}
-                options={[{ value: "none", label: "None" }, { value: "CO2", label: "CO₂" }, { value: "He", label: "Helium" }]}
-              />
-              <AnimatePresence initial={false}>
-                {form.suppressant !== "none" && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                    <ParameterSlider
-                      label={`${form.suppressant === "CO2" ? "CO₂" : "Helium"} concentration`}
-                      value={form.suppressant_percent ?? 0}
-                      min={0}
-                      max={suppMax}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => update({ suppressant_percent: v })}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <ParameterSlider
-                label="Initial droplet diameter"
-                value={form.droplet_diameter_mm}
-                min={ranges.droplet_diameter_mm[0]}
-                max={ranges.droplet_diameter_mm[1]}
-                step={0.05}
-                unit="mm"
-                digits={2}
-                onChange={(v) => update({ droplet_diameter_mm: v })}
-              />
+              <ConditionsFields value={form} onChange={setForm} domain={domain.data!} />
 
               <details className="group rounded-xl md:col-span-2 xl:col-span-1 border border-white/[0.06] bg-white/[0.02] p-3.5 text-sm">
                 <summary className="flex cursor-pointer list-none items-center gap-2 text-ink-2">
