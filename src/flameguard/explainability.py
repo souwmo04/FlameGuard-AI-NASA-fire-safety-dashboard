@@ -36,6 +36,8 @@ measured causal effects of changing a condition.
 
 from __future__ import annotations
 
+import math
+
 from itertools import combinations
 from math import factorial
 
@@ -148,7 +150,7 @@ def format_risk(risk: float) -> str:
         return "> 99"
     if risk < 0.5:
         return "< 1"
-    return f"{risk:.0f}"
+    return str(math.floor(risk + 0.5))  # round halves up, like the frontend's Math.round (not banker's rounding)
 
 
 def describe(row: pd.Series, band: str, inputs: pd.Series | None = None) -> str:
