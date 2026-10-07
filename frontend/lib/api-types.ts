@@ -455,6 +455,20 @@ export interface components {
              */
             droplet_diameter_mm: number;
         };
+        /** ContaminationCheck */
+        ContaminationCheck: {
+            /** @default prediction */
+            provenance: components["schemas"]["Provenance"];
+            /**
+             * Fire Risk Without Methanol Disruptions
+             * @description Fire Risk from the same model refitted without methanol Disruption tests (decision D-002)
+             */
+            fire_risk_without_methanol_disruptions: number;
+            /** Difference */
+            difference: number;
+            /** Note */
+            note: string;
+        };
         /** Contribution */
         Contribution: {
             /**
@@ -507,6 +521,8 @@ export interface components {
             band: components["schemas"]["BandEvidence"];
             /** Nearest Experiment Ids */
             nearest_experiment_ids: number[];
+            /** @description Methanol only: sensitivity of the score to disruption outcomes NASA links to fuel contamination */
+            contamination_check?: components["schemas"]["ContaminationCheck"] | null;
         };
         /** ExperimentCounts */
         ExperimentCounts: {
@@ -738,7 +754,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "summary" | "drivers" | "evidence" | "extrapolation" | "suppressant" | "disclaimer";
+            kind: "summary" | "drivers" | "evidence" | "extrapolation" | "suppressant" | "contamination" | "disclaimer";
             /** Text */
             text: string;
         };

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, FlaskConical, GitCompareArrows, Info, ShieldCheck, Sparkles, TriangleAlert, type LucideIcon } from "lucide-react";
+import { Beaker, Check, Copy, FlaskConical, GitCompareArrows, Info, ShieldCheck, Sparkles, TriangleAlert, type LucideIcon } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 
@@ -13,6 +13,7 @@ const KIND: Record<InterpretationPoint["kind"], { icon: LucideIcon; label: strin
   evidence: { icon: ShieldCheck, label: "Track record", tone: "text-prov-evaluation" },
   extrapolation: { icon: TriangleAlert, label: "Caution", tone: "text-risk-elevated" },
   suppressant: { icon: FlaskConical, label: "Limitation", tone: "text-risk-elevated" },
+  contamination: { icon: Beaker, label: "Data caveat", tone: "text-risk-elevated" },
   disclaimer: { icon: Info, label: "Note", tone: "text-ink-3" },
 };
 
@@ -46,7 +47,7 @@ export function InterpretationCard({ interpretation }: { interpretation: Predict
               className={cn(
                 "flex gap-3 rounded-xl border p-3.5",
                 pt.kind === "summary" ? "border-flame/25 bg-flame/[0.05]" : "border-white/[0.06] bg-white/[0.02]",
-                (pt.kind === "extrapolation" || pt.kind === "suppressant") && "border-risk-elevated/30 bg-risk-elevated/[0.05]",
+                (pt.kind === "extrapolation" || pt.kind === "suppressant" || pt.kind === "contamination") && "border-risk-elevated/30 bg-risk-elevated/[0.05]",
               )}
             >
               <Icon className={cn("mt-0.5 size-4 shrink-0", k.tone)} aria-hidden="true" />

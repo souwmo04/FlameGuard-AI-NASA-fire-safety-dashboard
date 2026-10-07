@@ -195,7 +195,7 @@ export function SciencePage() {
               NASA judges burning rates, flame sizes and radiative extinction diameters minimally affected or unaffected. However, it states that disruptive extinction of methanol is <span className="text-ink">probably due to the contaminant</span>, and that no conclusion can be drawn for heptane.<Cite p={17} />
             </p>
             <p className="rounded-lg border border-risk-elevated/25 bg-risk-elevated/[0.06] p-3 text-xs leading-relaxed text-ink-2">
-              <span className="font-semibold text-ink">What this means for FlameGuard:</span> the model counts disruption as &quot;kept burning&quot;. Some of those outcomes may reflect contamination rather than the atmosphere. This is recorded as a known limitation in the{" "}
+              <span className="font-semibold text-ink">What this means for FlameGuard:</span> the model counts disruption as &quot;kept burning&quot;. Some of those outcomes may reflect contamination rather than the atmosphere. Removing the methanol disruptions barely changes heptane scores but lowers methanol scores sharply, so every methanol prediction shows that alternative score as a contamination check. Details: decision D-002 and the{" "}
               <a className="text-plasma hover:underline" href="https://github.com/souwmo04/FlameGuard-AI-NASA-fire-safety-dashboard/blob/main/docs/model_card.md#known-limitations" target="_blank" rel="noreferrer">model card</a>.
             </p>
           </GlassCard>

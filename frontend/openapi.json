@@ -1207,6 +1207,34 @@
           "suppressant_percent": 10
         }
       },
+      "ContaminationCheck": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "prediction"
+          },
+          "fire_risk_without_methanol_disruptions": {
+            "type": "number",
+            "title": "Fire Risk Without Methanol Disruptions",
+            "description": "Fire Risk from the same model refitted without methanol Disruption tests (decision D-002)"
+          },
+          "difference": {
+            "type": "number",
+            "title": "Difference"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fire_risk_without_methanol_disruptions",
+          "difference",
+          "note"
+        ],
+        "title": "ContaminationCheck"
+      },
       "Contribution": {
         "properties": {
           "key": {
@@ -1323,6 +1351,17 @@
             },
             "type": "array",
             "title": "Nearest Experiment Ids"
+          },
+          "contamination_check": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContaminationCheck"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Methanol only: sensitivity of the score to disruption outcomes NASA links to fuel contamination"
           }
         },
         "type": "object",
@@ -1951,6 +1990,7 @@
               "evidence",
               "extrapolation",
               "suppressant",
+              "contamination",
               "disclaimer"
             ],
             "title": "Kind"

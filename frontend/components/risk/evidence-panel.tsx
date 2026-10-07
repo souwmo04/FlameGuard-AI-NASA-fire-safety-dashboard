@@ -1,7 +1,7 @@
-import { CircleCheck, CircleX, TriangleAlert } from "lucide-react";
+import { Beaker, CircleCheck, CircleX, TriangleAlert } from "lucide-react";
 
 import { ProvenanceBadge } from "@/components/ui/provenance-badge";
-import { formatPercent } from "@/lib/format";
+import { formatPercent, formatRisk } from "@/lib/format";
 import type { PredictResponse } from "@/lib/types";
 
 /** How much the data supports this prediction: domain checks, band track record, warnings. */
@@ -44,6 +44,22 @@ export function EvidencePanel({ result }: { result: PredictResponse }) {
               <TriangleAlert className="mt-0.5 size-3.5 shrink-0 text-risk-elevated" aria-hidden="true" />{w}
             </p>
           ))}
+        </div>
+      )}
+
+      {e.contamination_check && (
+        <div className="space-y-2 rounded-xl border border-risk-elevated/30 bg-risk-elevated/[0.05] p-3.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+              <Beaker className="size-4 text-risk-elevated" aria-hidden="true" />Contamination check
+            </span>
+            <ProvenanceBadge kind="prediction" compact />
+          </div>
+          <p className="text-sm text-ink-2">
+            Without methanol disruptions: <span className="font-mono font-semibold text-ink">{formatRisk(e.contamination_check.fire_risk_without_methanol_disruptions)}</span>
+            <span className="text-ink-3"> (this score: {formatRisk(result.fire_risk)})</span>
+          </p>
+          <p className="text-xs leading-relaxed text-ink-3">{e.contamination_check.note}</p>
         </div>
       )}
 
