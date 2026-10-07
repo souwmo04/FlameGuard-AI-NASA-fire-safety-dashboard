@@ -1,0 +1,22 @@
+[
+  {"id": "hook", "section": 1, "text": "In microgravity, fire does not rise. Without buoyancy, a burning droplet wraps itself in a sphere of flame, and our Earth-based instincts about fire no longer apply."},
+  {"id": "who", "section": 1, "text": "I'm Fahim Foysal, and this is FlameGuard A I, my project for the NASA Space Apps Challenge 2026, built for the Flame in Freefall challenge."},
+  {"id": "special", "section": 1, "text": "FlameGuard turns NASA's own experiments from the International Space Station into fire safety insight that anyone can use. What makes it different is a simple promise: it never invents a number. Every value on screen tells you whether NASA measured it, a model predicted it, or it was estimated from the data."},
+
+  {"id": "why_question", "section": 2, "text": "Why does this matter? NASA ran the Flame Extinguishment Experiment to answer a fire safety question for spacecraft: below what oxygen level will a flame refuse to keep burning?"},
+  {"id": "why_atmos", "section": 2, "text": "Its test atmospheres matched the space station's normal cabin, the atmosphere used before a spacewalk, and the highest oxygen level proposed for future exploration vehicles. These are the atmospheres crews live and work in."},
+  {"id": "why_data", "section": 2, "text": "Between 2009 and 2011, NASA burned two hundred and seventy four fuel droplets aboard the station. In one hundred and eighty six tests, the flame went out on its own. In eighty eight, it kept burning."},
+  {"id": "why_problem", "section": 2, "text": "But those answers sit inside a three hundred page technical report and raw data tables. An engineer or a student cannot simply ask: under these conditions, will this fire survive?"},
+
+  {"id": "what_idea", "section": 3, "text": "So I built FlameGuard A I. You set the fuel, the oxygen, a suppressant and the droplet size, and a machine learning model, trained and tested on NASA's data, estimates the chance that the flame keeps burning."},
+  {"id": "what_explain", "section": 3, "text": "Then it shows why: which inputs pushed the risk up or down, how close your conditions are to real tests, and how often its past predictions in that range came true."},
+  {"id": "what_evidence", "section": 3, "text": "On tests it never saw, the model ranks a flame that kept burning above one that went out about ninety two percent of the time. And when it says high risk, eighty seven percent of those flames really did keep burning."},
+  {"id": "what_tools", "section": 3, "text": "A What If Lab compares scenarios side by side, an explorer opens every NASA test, and a suppressant lab honestly reports when the data cannot rank carbon dioxide against helium."},
+  {"id": "what_ask", "section": 3, "text": "Ask FlameGuard searches the NASA report for you, and shows the exact page every answer comes from."},
+  {"id": "what_honest", "section": 3, "text": "It even flags its own weak spots. NASA reported contaminated fuel needles in these tests, so every methanol prediction shows how much that could change the result."},
+
+  {"id": "how_impact", "section": 4, "text": "What does this change? Fire safety evidence from orbit becomes something a mission designer, a teacher or a student can explore in seconds, with its uncertainty in plain sight."},
+  {"id": "how_needs", "section": 4, "text": "To go further, FlameGuard needs more data: newer tests with clean fuel needles, more fuels and burning solid materials, and review by combustion scientists before anyone relies on it."},
+  {"id": "how_vision", "section": 4, "text": "One day, a tool like this could check every proposed spacecraft atmosphere against real experimental evidence, before a crew ever breathes it."},
+  {"id": "outro", "section": 4, "text": "FlameGuard A I. Fire safety intelligence for space exploration. I'm Fahim Foysal. Thank you."}
+]

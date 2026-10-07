@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FlameGuard AI — pitch cards</title>
+<style>
+  :root { --bg:#05070d; --ink:#f1f5f9; --ink2:#a3b1c6; --ink3:#7b8aa3; --flame:#fbbf24; --ember:#fb923c; --plasma:#22d3ee; --violet:#a78bfa; --low:#34d399; --high:#f87171; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font-family:"Segoe UI", system-ui, sans-serif; overflow:hidden; }
+  .bg1, .bg2 { position:absolute; border-radius:50%; filter:blur(100px); pointer-events:none; }
+  .bg1 { width:900px; height:900px; right:-260px; top:-320px; background:rgb(34 211 238 / .09); }
+  .bg2 { width:760px; height:760px; left:-240px; bottom:-300px; background:rgb(251 191 36 / .10); }
+  .stars { position:absolute; inset:0; background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff8,transparent),radial-gradient(1px 1px at 72% 18%,#fff7,transparent),radial-gradient(1.5px 1.5px at 85% 64%,#fff6,transparent),radial-gradient(1px 1px at 30% 78%,#fff7,transparent),radial-gradient(1px 1px at 55% 40%,#fff5,transparent),radial-gradient(1.5px 1.5px at 20% 55%,#fff6,transparent),radial-gradient(1px 1px at 92% 30%,#fff7,transparent),radial-gradient(1px 1px at 40% 12%,#fff6,transparent); }
+  .stage { position:relative; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 140px; gap:28px; }
+  .chip { position:absolute; top:56px; left:72px; display:flex; align-items:center; gap:14px; font-size:22px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink2); }
+  .chip b { font-family:Consolas, monospace; font-size:26px; color:var(--bg); background:linear-gradient(90deg,var(--flame),var(--ember)); padding:4px 12px; border-radius:10px; letter-spacing:0; }
+  .src { position:absolute; bottom:48px; left:0; right:0; font-size:20px; color:var(--ink3); }
+  .src span { color:var(--plasma); }
+  h1 { margin:0; font-size:96px; line-height:1.05; font-weight:800; letter-spacing:-.02em; }
+  h2 { margin:0; font-size:64px; line-height:1.12; font-weight:750; letter-spacing:-.01em; }
+  .grad { background:linear-gradient(90deg,var(--flame),var(--ember)); -webkit-background-clip:text; color:transparent; }
+  .sub { font-size:34px; color:var(--ink2); line-height:1.4; max-width:1400px; }
+  .up { opacity:0; animation:up .9s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes up { from { opacity:0; transform:translateY(26px);} to { opacity:1; transform:none; } }
+  @keyframes pop { from { opacity:0; transform:scale(.6);} to { opacity:1; transform:scale(1);} }
+  .tiles { display:flex; gap:36px; justify-content:center; }
+  .tile { width:660px; padding:36px 40px; border-radius:28px; border:1px solid rgb(255 255 255 / .1); background:rgb(255 255 255 / .03); text-align:left; }
+  .tile .big { font-family:Consolas, monospace; font-size:52px; white-space:nowrap; font-weight:700; }
+  .tile .lbl { font-size:28px; color:var(--ink2); margin-top:10px; line-height:1.35; }
+  .counters { display:flex; gap:48px; }
+  .counter { width:430px; padding:34px; border-radius:28px; border:1px solid rgb(255 255 255 / .1); background:rgb(255 255 255 / .03); }
+  .counter .n { font-family:Consolas, monospace; font-size:110px; font-weight:800; line-height:1; }
+  .counter .t { margin-top:14px; font-size:28px; color:var(--ink2); }
+  .bar { height:14px; border-radius:99px; background:rgb(255 255 255 / .07); margin-top:22px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; border-radius:99px; animation:grow 1.6s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes grow { to { width:var(--w); } }
+  .list { text-align:left; display:flex; flex-direction:column; gap:22px; font-size:36px; color:var(--ink); }
+  .list div { display:flex; gap:22px; align-items:center; }
+  .list .dot { width:18px; height:18px; border-radius:50%; background:linear-gradient(90deg,var(--flame),var(--ember)); flex:none; }
+  .pages { position:relative; width:280px; height:360px; margin-bottom:10px; }
+  .pages div { position:absolute; inset:0; border-radius:14px; border:1px solid rgb(255 255 255 / .18); background:#0f1626; }
+  .quote { font-size:52px; font-weight:650; color:var(--flame); max-width:1300px; line-height:1.25; }
+  .people { display:flex; gap:40px; }
+  .person { width:380px; padding:34px; border-radius:28px; border:1px solid rgb(255 255 255 / .1); background:rgb(255 255 255 / .03); font-size:34px; }
+  .person .ic { font-size:72px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+<div class="bg1"></div><div class="bg2"></div><div class="stars"></div>
+<div class="stage" id="stage"></div>
+<script>
+const P = (n, label) => `<div class="chip"><b>0${n}</b>${label}</div>`;
+const SRC = (t) => `<div class="src up" style="animation-delay:1.6s">Source: <span>${t}</span></div>`;
+const d = (s) => `style="animation-delay:${s}s"`;
+
+const FLAME = `
+<svg viewBox="-160 -190 320 320" width="430" height="430" class="up" ${d(0.1)}>
+  <defs>
+    <radialGradient id="o" cx="50%" cy="58%" r="60%"><stop offset="0%" stop-color="#fde68a" stop-opacity="0"/><stop offset="70%" stop-color="#fb923c" stop-opacity=".45"/><stop offset="100%" stop-color="#f97316" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse id="e1" cx="0" cy="-46" rx="44" ry="100" fill="url(#o)"/>
+  <ellipse id="e2" cx="0" cy="-32" rx="30" ry="72" fill="none" stroke="#38bdf8" stroke-opacity=".75" stroke-width="5"/>
+  <circle r="14" fill="#1e293b" stroke="#e2e8f0" stroke-width="2"/>
+  <animate href="#e1" attributeName="ry" from="100" to="80" begin="3.2s" dur="2.4s" fill="freeze" calcMode="spline" keySplines=".22 1 .36 1" keyTimes="0;1"/>
+  <animate href="#e1" attributeName="rx" from="44" to="80" begin="3.2s" dur="2.4s" fill="freeze" calcMode="spline" keySplines=".22 1 .36 1" keyTimes="0;1"/>
+  <animate href="#e1" attributeName="cy" from="-46" to="0" begin="3.2s" dur="2.4s" fill="freeze" calcMode="spline" keySplines=".22 1 .36 1" keyTimes="0;1"/>
+  <animate href="#e2" attributeName="ry" from="72" to="62" begin="3.2s" dur="2.4s" fill="freeze" calcMode="spline" keySplines=".22 1 .36 1" keyTimes="0;1"/>
+  <animate href="#e2" attributeName="rx" from="30" to="62" begin="3.2s" dur="2.4s" fill="freeze" calcMode="spline" keySplines=".22 1 .36 1" keyTimes="0;1"/>
+  <animate href="#e2" attributeName="cy" from="-32" to="0" begin="3.2s" dur="2.4s" fill="freeze" calcMode="spline" keySplines=".22 1 .36 1" keyTimes="0;1"/>
+</svg>`;
+
+const SCENES = {
+  hook: `${FLAME}
+    <h1 class="up" ${d(0.6)}>In microgravity, <span class="grad">fire does not rise.</span></h1>
+    <div class="sub up" ${d(3.4)}>On Earth, buoyancy stretches a flame upward. In orbit, a burning droplet is wrapped in a sphere of flame.</div>
+    <div class="src up" style="animation-delay:4.2s">Illustration, not to scale · Source: <span>NASA/TP-2015-216046, p. 2</span></div>`,
+
+  who: `${P(1, "Who")}
+    <div class="up" style="animation-delay:0.1s;font-size:28px;letter-spacing:.32em;color:var(--plasma);font-weight:600">NASA SPACE APPS CHALLENGE 2026 · FLAME IN FREEFALL</div>
+    <h1 class="up" style="animation-delay:0.6s;font-size:150px">Fahim Foysal</h1>
+    <div class="sub up" ${d(1.6)}>presents</div>
+    <h2 class="up" style="animation-delay:2.4s;font-size:88px">FlameGuard <span class="grad">AI</span></h2>
+    <div class="sub up" style="animation-delay:3.2s;letter-spacing:.16em;text-transform:uppercase;font-size:26px">AI-powered fire safety intelligence for space exploration</div>`,
+
+  why_question: `${P(2, "Why")}
+    <div class="sub up" ${d(0.2)}>The question NASA's Flame Extinguishment Experiment set out to answer</div>
+    <div class="quote up" ${d(1.2)}>Below what oxygen level will a flame refuse to keep burning?</div>
+    <div class="sub up" style="animation-delay:2.4s;font-size:28px">The limiting oxygen index — chosen for its importance to <b style="color:var(--ink)">spacecraft fire safety</b></div>
+    ${SRC("NASA/TP-2015-216046, p. 2")}`,
+
+  why_atmos: `${P(2, "Why")}
+    <h2 class="up" ${d(0.1)}>The atmospheres crews actually breathe</h2>
+    <div class="tiles">
+      <div class="tile up" ${d(0.8)}><div class="big" style="color:var(--plasma)">21% O₂ · 1 atm</div><div class="lbl">Normal International Space Station cabin</div></div>
+      <div class="tile up" ${d(1.6)}><div class="big" style="color:var(--flame)">30% O₂ · 0.7 atm</div><div class="lbl">Spacewalk pre-breathe atmosphere, and the highest oxygen level proposed for future exploration vehicles</div></div>
+    </div>
+    ${SRC("NASA/TP-2015-216046, p. 13")}`,
+
+  why_data: `${P(2, "Why")}
+    <h2 class="up" ${d(0.1)}>2009 – 2011, aboard the International Space Station</h2>
+    <div class="counters">
+      <div class="counter up" ${d(2.2)}><div class="n" data-to="274" data-at="2.4" style="color:var(--ink)">0</div><div class="t">fuel droplets burned</div><div class="bar"><i style="--w:100%;background:#94a3b8;animation-delay:2.6s"></i></div></div>
+      <div class="counter up" ${d(6.8)}><div class="n" data-to="186" data-at="7.0" style="color:var(--plasma)">0</div><div class="t">flames went out on their own</div><div class="bar"><i style="--w:68%;background:var(--plasma);animation-delay:7.2s"></i></div></div>
+      <div class="counter up" ${d(11.2)}><div class="n" data-to="88" data-at="11.4" style="color:var(--flame)">0</div><div class="t">flames kept burning</div><div class="bar"><i style="--w:32%;background:var(--flame);animation-delay:11.6s"></i></div></div>
+    </div>
+    ${SRC("NASA Physical Sciences Informatics, FLEX (PSI-69) — 274 tests")}`,
+
+  why_problem: `${P(2, "Why")}
+    <div class="pages up" ${d(0.1)}>
+      <div style="transform:rotate(-8deg) translate(-26px,8px)"></div><div style="transform:rotate(-3deg) translate(-10px,2px)"></div>
+      <div style="display:flex;flex-direction:column;justify-content:center;gap:12px;padding:30px;text-align:left;font-size:22px;color:var(--ink2)"><b style="color:var(--ink);font-size:26px">NASA/TP-2015-216046</b>Detailed Results From the Flame Extinguishment Experiment<span style="font-family:Consolas;color:var(--flame);font-size:30px;margin-top:10px">300+ pages</span></div>
+    </div>
+    <div class="sub up" ${d(1.0)}>The answers exist, but they sit in a long report and raw data tables.</div>
+    <div class="quote up" ${d(6.4)} style="font-style:italic">Under these conditions, will this fire survive?</div>`,
+
+  how_impact: `${P(4, "How")}
+    <h2 class="up" ${d(0.1)}>Evidence from orbit, <span class="grad">explorable in seconds</span></h2>
+    <div class="people">
+      <div class="person up" ${d(1.4)}><div class="ic">🚀</div>Mission designers</div>
+      <div class="person up" ${d(2.0)}><div class="ic">🧑‍🏫</div>Teachers</div>
+      <div class="person up" ${d(2.6)}><div class="ic">🎓</div>Students</div>
+    </div>
+    <div class="sub up" ${d(6.0)}>…with the uncertainty in plain sight.</div>`,
+
+  how_needs: `${P(4, "How")}
+    <h2 class="up" ${d(0.1)}>What FlameGuard needs next</h2>
+    <div class="list">
+      <div class="up" ${d(1.6)}><span class="dot"></span>Newer FLEX tests with clean fuel needles</div>
+      <div class="up" ${d(5.0)}><span class="dot"></span>More fuels, and burning solid materials</div>
+      <div class="up" ${d(8.6)}><span class="dot"></span>Review by combustion scientists</div>
+    </div>`,
+
+  how_vision: `${P(4, "How")}
+    <div class="sub up" ${d(0.1)}>One day…</div>
+    <h2 class="up" style="animation-delay:0.8s;max-width:1500px">Every proposed spacecraft atmosphere, <span class="grad">checked against real experimental evidence</span> — before a crew ever breathes it.</h2>`,
+
+  outro: `
+    <h1 class="up" style="animation-delay:0.1s;font-size:120px">FlameGuard <span class="grad">AI</span></h1>
+    <div class="sub up" style="animation-delay:0.8s;letter-spacing:.16em;text-transform:uppercase;font-size:28px">Fire safety intelligence for space exploration</div>
+    <div class="up" style="animation-delay:1.6s;font-size:44px;font-weight:650;margin-top:16px">Fahim Foysal</div>
+    <div class="up" style="animation-delay:2.2s;font-family:Consolas;font-size:26px;color:var(--plasma)">github.com/souwmo04/FlameGuard-AI-NASA-fire-safety-dashboard</div>
+    <div class="sub up" style="animation-delay:2.8s;font-size:22px;color:var(--ink3)">Data: NASA PSI-69 (CC0) · NASA/TP-2015-216046 · NASA Space Apps Challenge 2026 · Research prototype, not a certified fire-safety system</div>`,
+};
+
+const id = new URLSearchParams(location.search).get("s") || "hook";
+document.getElementById("stage").innerHTML = SCENES[id] || "";
+// count-up numbers
+document.querySelectorAll("[data-to]").forEach((el) => {
+  const to = +el.dataset.to, at = (+el.dataset.at || 0.6) * 1000, dur = 1600;
+  setTimeout(() => {
+    const t0 = performance.now();
+    const step = (now) => { const k = Math.min(1, (now - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }, at);
+});
+</script>
+</body>
+</html>
