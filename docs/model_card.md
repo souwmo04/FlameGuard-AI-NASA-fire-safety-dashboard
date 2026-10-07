@@ -96,6 +96,14 @@ Explanations describe how the model uses its inputs; they are associations learn
 4. **Small data.** 252 tests, 44 atmosphere groups; methanol with helium has only 2 sustained tests.
 5. **Adaptive test design.** NASA chose tests to locate extinction limits, so the data over-represents near-limit
    conditions; the outcome rates are not real-world fire frequencies.
+6. **Disruption outcomes may be contaminated (found 2026-10-07, not yet acted on).** NASA reports that a conformal
+   coating on the fuel needles dissolved or flaked into the droplets in these tests. NASA states that disruptive
+   extinction of methanol "is probably due to the presence of the contaminant". For heptane, NASA says no
+   conclusion can be drawn. Burning rates, flame sizes and radiative extinction diameters were minimally affected
+   or unaffected (NASA/TP-2015-216046, §5.2, pp. 16–17). FlameGuard counts disruption as sustained burning, so
+   the 23 methanol disruptions (and possibly the 38 heptane ones) may reflect the contaminant rather than the
+   atmosphere. The Phase 8 sensitivity run without any disruption tests (199 tests, 27 sustained) gave ROC-AUC
+   0.904 and PR-AUC 0.727, compared with 0.922 and 0.868 for the same model on the primary data.
 
 ## Files
 

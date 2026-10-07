@@ -72,6 +72,13 @@ no SF₆ (mentioned in FLEX objectives but not in this table), no support-fiber 
 4. Identifier `193F001` appears twice (tests 70 and 73).
 5. Mole fractions sum to 0.98–1.01 (rounding).
 6. Header subscripts lost (`O`→O₂, `CO`→CO₂, `N`→N₂); burning-rate unit mislabelled.
+7. **Fuel contamination (reported by NASA).** In these tests the fuel needles carried a conformal coating that
+   dissolved or flaked into the droplets. NASA judges burning rates and flame histories minimally affected, but
+   methanol disruptions "probably due to the presence of the contaminant"; for heptane disruptions it draws no
+   conclusion (NASA/TP-2015-216046, §5.2, pp. 16–17). Not correctable from the data; see the model card,
+   limitation 6.
+8. Figure captions in the report occasionally disagree with the tabulated data (e.g. FLEX-094: caption
+   0.27/0.56/0.20 O₂/N₂/CO₂, which sums to 1.03; table and dataset 0.24/0.56/0.20). The dataset values are used.
 
 ## Cleaning (Phase 3) — `data/processed/combustion_master.csv`
 
