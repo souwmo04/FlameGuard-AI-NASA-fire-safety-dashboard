@@ -28,6 +28,7 @@ REPO_URL = "https://github.com/souwmo04/FlameGuard-AI-NASA-fire-safety-dashboard
 REPORT_ID = "nasa-tp-2015-216046"
 REPORT_TITLE = "NASA/TP-2015-216046 — Detailed Results From the Flame Extinguishment Experiment (FLEX), March 2009 to December 2011"
 REPORT_URL = "https://ntrs.nasa.gov/citations/20150023456"
+REPORT_PDF_URL = "https://ntrs.nasa.gov/api/citations/20150023456/downloads/20150023456.pdf"
 
 CHUNK_WORDS = 220
 OVERLAP_WORDS = 40
@@ -107,7 +108,8 @@ def chunks_from_report(pdf_path: Path) -> list[Chunk]:
         if len(raw.split()) < 40 or raw.count(".....") > 5 or _is_table_page(raw):
             continue  # figures, table of contents, data-table appendix
         match = _PAGE_NO.search(raw[:200])
-        printed = match.group(1) if match else str(index + 1)
+        # printed page numbers where the page has one; cover pages are labelled by PDF page instead
+        location = f"p. {match.group(1)}" if match else f"PDF p. {index + 1}"
         body = _PAGE_NO.sub("", _clean_pdf_text(raw), count=1)
         figure = _FIGURE_TEST.search(body[:300])
         if figure:  # Appendix A: one page of images and observations per test
@@ -126,8 +128,8 @@ def chunks_from_report(pdf_path: Path) -> list[Chunk]:
             page_section = section
         for j, piece in enumerate(_split_words(body)):
             chunks.append(Chunk(id=f"{REPORT_ID}-p{index + 1}-{j}", source_id=REPORT_ID, source_title=REPORT_TITLE,
-                                location=f"p. {printed}", section=page_section, text=piece,
-                                url=f"{REPORT_URL}"))
+                                location=location, section=page_section, text=piece,
+                                url=f"{REPORT_PDF_URL}#page={index + 1}"))
     return chunks
 
 
