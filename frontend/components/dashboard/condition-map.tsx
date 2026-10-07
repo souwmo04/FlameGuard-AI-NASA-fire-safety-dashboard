@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts";
 
 import { ChartTooltip } from "@/components/charts/chart-tooltip";
+import { OutcomeShape } from "@/components/charts/outcome-shape";
 import { AXIS, GRID, OUTCOME_COLORS, OUTCOME_LABEL, OUTCOME_SHAPES, type Outcome } from "@/lib/chart-theme";
 import { cn } from "@/lib/cn";
 import type { ExperimentSummary } from "@/lib/types";
@@ -89,23 +90,12 @@ export function ConditionMap({ experiments }: { experiments: ExperimentSummary[]
         <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ink-3">
           {(Object.keys(OUTCOME_COLORS) as Outcome[]).map((o) => (
             <span key={o} className="flex items-center gap-1.5">
-              <ShapeKey outcome={o} /> {OUTCOME_LABEL[o]} ({series[o].length})
+              <OutcomeShape outcome={o} /> {OUTCOME_LABEL[o]} ({series[o].length})
             </span>
           ))}
           {missing > 0 && <span>{missing} test{missing > 1 ? "s" : ""} without a reported droplet diameter not shown.</span>}
         </figcaption>
       </figure>
     </div>
-  );
-}
-
-function ShapeKey({ outcome }: { outcome: Outcome }) {
-  const c = OUTCOME_COLORS[outcome];
-  return (
-    <svg viewBox="0 0 10 10" className="size-2.5" aria-hidden="true">
-      {OUTCOME_SHAPES[outcome] === "circle" && <circle cx="5" cy="5" r="4.5" fill={c} />}
-      {OUTCOME_SHAPES[outcome] === "triangle" && <path d="M5 0.5 L9.5 9.5 L0.5 9.5 Z" fill={c} />}
-      {OUTCOME_SHAPES[outcome] === "diamond" && <path d="M5 0 L10 5 L5 10 L0 5 Z" fill={c} />}
-    </svg>
   );
 }

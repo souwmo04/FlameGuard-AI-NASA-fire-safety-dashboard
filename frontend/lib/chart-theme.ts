@@ -23,6 +23,12 @@ export const OUTCOME_LABEL: Record<Outcome, string> = {
   Disruption: "Droplet disrupted while burning",
 };
 
+export const OUTCOME_SHORT: Record<Outcome, string> = {
+  Extinction: "Self-extinguished",
+  Completion: "Completed",
+  Disruption: "Disrupted",
+};
+
 export const RISK_COLORS = { LOW: "#34d399", ELEVATED: "#fbbf24", HIGH: "#f87171" } as const;
 
 export const AXIS = {
