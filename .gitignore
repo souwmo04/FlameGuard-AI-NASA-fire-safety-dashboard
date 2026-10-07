@@ -36,3 +36,7 @@ frontend/.env*.local
 
 # Embedding model weights (downloaded by fastembed on first use)
 .cache/
+
+# setuptools build output (pip install .)
+build/
+*.egg-info/

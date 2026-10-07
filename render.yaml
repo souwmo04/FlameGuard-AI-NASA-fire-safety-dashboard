@@ -1,0 +1,16 @@
+# Render blueprint (alternative to Hugging Face Spaces). Render's free instances have 512 MB of memory and the
+# API peaks around 410 MB with the embedding model loaded, so use at least the Starter plan for reliability.
+services:
+  - type: web
+    name: flameguard-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: FLAMEGUARD_CORS_ORIGINS
+        sync: false          # e.g. https://your-site.vercel.app
+      - key: FLAMEGUARD_LLM_API_KEY
+        sync: false          # secret: Groq (or other OpenAI-compatible) key
+      - key: FLAMEGUARD_ASK_PER_MINUTE
+        value: "6"

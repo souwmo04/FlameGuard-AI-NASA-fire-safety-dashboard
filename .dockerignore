@@ -1,0 +1,18 @@
+# Only backend/Dockerfile's COPY lines matter; keep the build context small.
+.git
+.github
+.venv
+.cache
+**/__pycache__
+**/*.pyc
+.pytest_cache
+frontend
+notebooks
+documents
+data/raw
+data/interim
+docs
+backend/.env
+backend/tests
+*.md
+!README.md
