@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { ComingSoon } from "@/components/common/coming-soon";
+import { ExperimentExplorer } from "@/components/experiments/experiment-explorer";
+import { LoadingState } from "@/components/ui/states";
 
 export const metadata: Metadata = { title: "Experiment Explorer" };
 
 export default function Page() {
+  // The explorer reads ?test= from the URL, so it renders on the client below this boundary.
   return (
-    <ComingSoon
-      eyebrow="Experiments"
-      title="Experiment Explorer"
-      subtitle="All 274 tests from NASA’s Flame Extinguishment Experiment aboard the ISS."
-      phase="Phase 10"
-      endpoints={["GET /api/experiments","GET /api/experiments/{id}","GET /api/sources"]}
-    />
+    <Suspense fallback={<LoadingState rows={10} label="Loading experiments" />}>
+      <ExperimentExplorer />
+    </Suspense>
   );
 }
