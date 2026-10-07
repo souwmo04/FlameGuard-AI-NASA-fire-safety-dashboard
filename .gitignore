@@ -40,3 +40,6 @@ frontend/.env*.local
 # setuptools build output (pip install .)
 build/
 *.egg-info/
+
+# Demo video outputs (regenerate with demo/*.py)
+demo/out/

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FlameGuard AI — outro</title>
+<style>
+  :root { --bg: #05070d; --ink: #f1f5f9; --ink2: #a3b1c6; --ink3: #7b8aa3; --flame: #fbbf24; --ember: #fb923c; --plasma: #22d3ee; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  .glow { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .g1 { width: 760px; height: 760px; left: 50%; top: 50%; transform: translate(-50%, -55%); background: rgb(251 191 36 / 0.08); }
+  .wrap { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 26px; }
+  h1 { margin: 0; font-size: 104px; font-weight: 800; letter-spacing: -0.02em; opacity: 0; animation: up 0.9s 0.2s forwards; }
+  h1 span { background: linear-gradient(90deg, var(--flame), var(--ember)); -webkit-background-clip: text; color: transparent; }
+  .chips { display: flex; gap: 16px; opacity: 0; animation: up 0.9s 0.9s forwards; }
+  .chip { font-size: 22px; padding: 8px 18px; border-radius: 999px; border: 1px solid; }
+  .c1 { color: #22d3ee; border-color: #22d3ee55; background: #22d3ee14; }
+  .c2 { color: #a78bfa; border-color: #a78bfa55; background: #a78bfa14; }
+  .c3 { color: #60a5fa; border-color: #60a5fa55; background: #60a5fa14; }
+  .repo { font-family: "Cascadia Code", Consolas, monospace; font-size: 26px; color: var(--plasma); opacity: 0; animation: up 0.9s 1.8s forwards; }
+  .src { font-size: 22px; color: var(--ink3); max-width: 1300px; line-height: 1.5; opacity: 0; animation: up 0.9s 2.6s forwards; }
+  .note { font-size: 22px; color: var(--flame); opacity: 0; animation: up 0.9s 3.4s forwards; }
+  @keyframes up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+  <div class="glow g1"></div>
+  <div class="wrap">
+    <h1>FlameGuard <span>AI</span></h1>
+    <div class="chips"><span class="chip c1">NASA observed</span><span class="chip c2">ML prediction</span><span class="chip c3">Statistical estimate</span></div>
+    <div class="repo">github.com/souwmo04/FlameGuard-AI-NASA-fire-safety-dashboard</div>
+    <div class="src">Data: NASA Physical Sciences Informatics, FLEX (PSI-69), CC0 · Report: NASA/TP-2015-216046<br>NASA Space Apps Challenge 2026 · Flame in Freefall</div>
+    <div class="note">Research prototype — not a certified spacecraft fire-safety system</div>
+  </div>
+</body>
+</html>

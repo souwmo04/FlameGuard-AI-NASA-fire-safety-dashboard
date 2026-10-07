@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FlameGuard AI — intro</title>
+<style>
+  :root { --bg: #05070d; --ink: #f1f5f9; --ink2: #a3b1c6; --flame: #fbbf24; --ember: #fb923c; --plasma: #22d3ee; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  .glow { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .g1 { width: 820px; height: 820px; right: -160px; top: -260px; background: rgb(34 211 238 / 0.10); }
+  .g2 { width: 700px; height: 700px; left: -200px; bottom: -260px; background: rgb(251 191 36 / 0.11); }
+  .stars { position: absolute; inset: 0; background-image: radial-gradient(1.5px 1.5px at 12% 22%, #fff8, transparent), radial-gradient(1px 1px at 72% 18%, #fff7, transparent), radial-gradient(1.5px 1.5px at 85% 64%, #fff6, transparent), radial-gradient(1px 1px at 30% 78%, #fff7, transparent), radial-gradient(1px 1px at 55% 40%, #fff5, transparent), radial-gradient(1.5px 1.5px at 20% 55%, #fff6, transparent), radial-gradient(1px 1px at 92% 30%, #fff7, transparent); }
+  .wrap { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 22px; }
+  .eyebrow { font-size: 26px; letter-spacing: 0.32em; color: var(--plasma); font-weight: 600; opacity: 0; animation: up 0.9s 0.2s forwards; }
+  .challenge { font-size: 30px; color: var(--ink2); opacity: 0; animation: up 0.9s 0.9s forwards; }
+  .orb { width: 150px; height: 150px; border-radius: 50%; margin: 18px 0 6px; background: radial-gradient(circle, #e0f2fe 0%, #38bdf8 32%, #f59e0b 66%, transparent 72%); box-shadow: 0 0 90px rgb(251 146 60 / 0.55); opacity: 0; animation: pop 1.2s 3.2s forwards, breathe 3s 4.4s ease-in-out infinite; }
+  h1 { margin: 0; font-size: 132px; line-height: 1; font-weight: 800; letter-spacing: -0.02em; opacity: 0; animation: up 1s 3.6s forwards; }
+  h1 span { background: linear-gradient(90deg, var(--flame), var(--ember)); -webkit-background-clip: text; color: transparent; }
+  .tag { font-size: 30px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); opacity: 0; animation: up 1s 4.4s forwards; }
+  .by { font-size: 28px; color: var(--ink2); opacity: 0; animation: up 1s 6.2s forwards; }
+  .by b { color: var(--flame); }
+  @keyframes up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+  @keyframes breathe { 50% { transform: scale(1.06); } }
+</style>
+</head>
+<body>
+  <div class="glow g1"></div><div class="glow g2"></div><div class="stars"></div>
+  <div class="wrap">
+    <div class="eyebrow">NASA SPACE APPS CHALLENGE 2026</div>
+    <div class="challenge">Challenge: Flame in Freefall</div>
+    <div class="orb"></div>
+    <h1>FlameGuard <span>AI</span></h1>
+    <div class="tag">AI-powered fire safety intelligence for space exploration</div>
+    <div class="by">Built by <b>souwmo04</b></div>
+  </div>
+</body>
+</html>

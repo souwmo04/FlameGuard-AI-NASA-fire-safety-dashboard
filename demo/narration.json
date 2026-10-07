@@ -1,0 +1,15 @@
+[
+  {"id": "intro", "text": "This is FlameGuard A I, my project for the NASA Space Apps Challenge 2026, built for the Flame in Freefall challenge. I made it to turn real NASA microgravity fire experiments into clear, honest fire safety insight for space exploration."},
+  {"id": "landing", "text": "It is built on NASA's Flame Extinguishment Experiment: two hundred and seventy four fuel droplets, burned on the International Space Station between 2009 and 2011."},
+  {"id": "mission", "text": "Mission Control gives the big picture: the data, the outcomes, how accurate the model really is, and which inputs matter most."},
+  {"id": "risk", "text": "In Fire Risk Analysis, you set the fuel, oxygen, suppressant and droplet size. The model predicts whether the flame keeps burning, checks that NASA actually tested similar conditions, and explains what pushed the risk up or down."},
+  {"id": "whatif", "text": "The What If Lab compares two scenarios side by side, and overlays real NASA tests on the risk curve as a reality check."},
+  {"id": "experiments", "text": "The Experiment Explorer lets you search and filter every test, and open each one to see NASA's measurements next to the model's verdict."},
+  {"id": "ranking", "text": "Rankings show which atmospheres kept flames alive most often, with honest uncertainty."},
+  {"id": "suppressant", "text": "The Suppressant Lab compares carbon dioxide and helium using observed data only, and says clearly when the evidence cannot rank them."},
+  {"id": "similar", "text": "Similar Tests finds the closest real experiments to any conditions you choose."},
+  {"id": "ask", "text": "Ask FlameGuard searches NASA's official FLEX report and the project documents to answer your questions, always showing the exact passages it relies on."},
+  {"id": "science", "text": "The science page explains why flames become spheres in microgravity, with every claim linked to its page in the NASA report."},
+  {"id": "methodology", "text": "And the methodology page shows how the model was built, how it was tested, and where it falls short."},
+  {"id": "outro", "text": "Every number is labelled as an observation, a prediction or an estimate. FlameGuard is a research prototype, not a certified safety system. Thank you for watching."}
+]
