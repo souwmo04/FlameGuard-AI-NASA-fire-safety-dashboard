@@ -16,9 +16,11 @@ import { api, endpoints, type ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { describeConditions } from "@/lib/conditions";
 import { REFERENCE_SCENARIO, saveLastAnalysis } from "@/lib/last-analysis";
-import type { Conditions, DomainResponse, Fuel, SimilarResponse, StatsResponse, Suppressant } from "@/lib/types";
+import type { Conditions, DomainResponse, Fuel, ModelInfoResponse, SimilarResponse, StatsResponse, Suppressant } from "@/lib/types";
 
+import { ContributionWaterfall } from "./contribution-waterfall";
 import { EvidencePanel } from "./evidence-panel";
+import { InterpretationCard } from "./interpretation-card";
 import { NearestTests } from "./nearest-tests";
 import { ParameterSlider } from "./parameter-slider";
 import { ProbabilityBars } from "./probability-bars";
@@ -31,6 +33,7 @@ const same = (a: Conditions, b: Conditions) => JSON.stringify(a) === JSON.string
 export function FireRiskAnalyzer() {
   const domain = useApi<DomainResponse>(endpoints.domain);
   const stats = useApi<StatsResponse>(endpoints.stats);
+  const model = useApi<ModelInfoResponse>(endpoints.model);
   const [form, setForm] = useState<Conditions>(REFERENCE_SCENARIO);
   const [submitted, setSubmitted] = useState<Conditions | null>(null);
 
@@ -220,6 +223,28 @@ export function FireRiskAnalyzer() {
           </div>
         </Panel>
       </div>
+
+      {result && (
+        <div className={cn("grid gap-4 transition-opacity xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] xl:gap-6", stale && "opacity-45")}>
+          <Panel
+            title="Why this prediction?"
+            provenance="explanation"
+            description="How each input moved the Fire Risk away from the average FLEX test."
+            delay={0.05}
+          >
+            <ContributionWaterfall
+              key={JSON.stringify(result.conditions)}
+              explanation={result.explanation}
+              fireRisk={result.fire_risk}
+              alert={alert}
+              globalImportance={model.data?.global_importance}
+            />
+          </Panel>
+          <Panel title="AI interpretation" provenance="interpretation" description="The analysis in plain language." delay={0.12}>
+            <InterpretationCard key={JSON.stringify(result.conditions)} interpretation={result.interpretation} />
+          </Panel>
+        </div>
+      )}
 
       {submitted && (
         <Panel
