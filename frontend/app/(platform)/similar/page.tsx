@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { ComingSoon } from "@/components/common/coming-soon";
+import { SimilarExplorer } from "@/components/similar/similar-explorer";
+import { LoadingState } from "@/components/ui/states";
 
-export const metadata: Metadata = { title: "Similar Experiments" };
+export const metadata: Metadata = { title: "Similar NASA Tests" };
 
 export default function Page() {
+  // Conditions can arrive in the URL (e.g. from Fire Risk), read on the client below this boundary.
   return (
-    <ComingSoon
-      eyebrow="Similar Tests"
-      title="Similar Experiments"
-      subtitle="Find the NASA tests closest to the conditions you describe."
-      phase="Phase 12"
-      endpoints={["POST /api/similar-experiments"]}
-    />
+    <Suspense fallback={<LoadingState rows={10} label="Loading similar tests" />}>
+      <SimilarExplorer />
+    </Suspense>
   );
 }
