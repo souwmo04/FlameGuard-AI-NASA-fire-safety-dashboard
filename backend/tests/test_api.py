@@ -105,8 +105,19 @@ def test_predict_matches_model_and_is_explained(client):
     assert "not a NASA measurement" in text and "28%" in text
     assert p["interpretation"]["provenance"] == "interpretation"
     points = p["interpretation"]["points"]
-    assert [pt["kind"] for pt in points] == ["summary", "drivers", "evidence", "disclaimer"]
+    assert [pt["kind"] for pt in points] == ["summary", "drivers", "evidence", "contamination", "disclaimer"]
     assert " ".join(pt["text"] for pt in points) == text
+
+
+def test_methanol_predictions_carry_contamination_check(client):
+    """D-002: methanol scores show the model refitted without the methanol disruptions NASA links to contamination."""
+    m = client.post("/api/predict", json=METHANOL_AIR).json()["evidence"]["contamination_check"]
+    assert m is not None and m["provenance"] == "prediction"
+    assert m["fire_risk_without_methanol_disruptions"] == pytest.approx(8.4, abs=0.2)
+    assert m["difference"] == pytest.approx(8.4 - 28.7, abs=0.3) and "pp. 16-17" in m["note"]
+    h = client.post("/api/predict", json={**METHANOL_AIR, "fuel": "Heptane"}).json()
+    assert h["evidence"]["contamination_check"] is None
+    assert all(pt["kind"] != "contamination" for pt in h["interpretation"]["points"])
 
 
 def test_predict_flags_untested_combination(client):

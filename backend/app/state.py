@@ -11,6 +11,7 @@ from fastapi import Request
 
 from flameguard.dataset import build_modeling_data
 from flameguard.knowledge import KnowledgeIndex
+from flameguard.model import FINAL_CANDIDATES
 from flameguard.prediction import FinalModel
 
 from app.config import Settings
@@ -36,6 +37,7 @@ class AppState:
     excluded: dict[int, str]      # test_id -> why it is outside the model's training scope
     cache: dict = field(default_factory=dict)  # lazily built, read-only derived views
     knowledge: KnowledgeIndex | None = None    # Ask FlameGuard corpus (set at startup, see services/ask.py)
+    contamination_model: object | None = None  # D-002 sensitivity: final model refitted without methanol disruptions
 
     @property
     def background(self) -> pd.DataFrame:
@@ -58,6 +60,11 @@ def load_state(settings: Settings) -> AppState:
     oof = oof_all[oof_all["model"] == SELECTED_MODEL].groupby("test_id")["p_sustained"].mean()
 
     importance = pd.read_csv(reports / "phase10" / "global_importance.csv")
+
+    # Decision D-002: NASA attributes methanol disruptions probably to fuel contamination. Refit the same
+    # model without them (deterministic, a few milliseconds) so methanol predictions can show the difference.
+    alt = build_modeling_data(master, "exclude_methanol_disruption")
+    contamination_model = FINAL_CANDIDATES["logreg_np"]().fit(alt.X, alt.y)
     return AppState(
         settings=settings,
         master=master,
@@ -73,6 +80,7 @@ def load_state(settings: Settings) -> AppState:
         missed_fires=pd.read_csv(reports / "phase9" / "consistently_missed_fires.csv"),
         data_sha256=hashlib.sha256(settings.master_path.read_bytes()).hexdigest(),
         excluded=dict(zip(data.excluded["test_id"].astype(int), data.excluded["reason"])),
+        contamination_model=contamination_model,
     )
 
 

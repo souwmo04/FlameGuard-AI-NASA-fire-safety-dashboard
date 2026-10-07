@@ -157,6 +157,14 @@ class BandEvidence(BaseModel):
     ci_high: float
 
 
+class ContaminationCheck(BaseModel):
+    provenance: Provenance = Provenance.PREDICTION
+    fire_risk_without_methanol_disruptions: float = Field(
+        description="Fire Risk from the same model refitted without methanol Disruption tests (decision D-002)")
+    difference: float
+    note: str
+
+
 class Evidence(BaseModel):
     in_tested_range: bool
     supported_by_data: bool = Field(description="Close to a tested FLEX condition (not an extrapolation)")
@@ -165,10 +173,12 @@ class Evidence(BaseModel):
     warnings: list[str]
     band: BandEvidence
     nearest_experiment_ids: list[int]
+    contamination_check: ContaminationCheck | None = Field(
+        None, description="Methanol only: sensitivity of the score to disruption outcomes NASA links to fuel contamination")
 
 
 class InterpretationPoint(BaseModel):
-    kind: Literal["summary", "drivers", "evidence", "extrapolation", "suppressant", "disclaimer"]
+    kind: Literal["summary", "drivers", "evidence", "extrapolation", "suppressant", "contamination", "disclaimer"]
     text: str
 
 

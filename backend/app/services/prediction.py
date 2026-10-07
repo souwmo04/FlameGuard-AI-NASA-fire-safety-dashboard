@@ -9,7 +9,7 @@ from flameguard.explainability import format_risk
 from flameguard.similarity import nearest_tests
 
 from app.schemas.common import Conditions, RiskLevel
-from app.schemas.responses import (BandEvidence, Contribution, Evidence, Explanation, Interpretation,
+from app.schemas.responses import (BandEvidence, ContaminationCheck, Contribution, Evidence, Explanation, Interpretation,
                                    InterpretationPoint, PredictResponse)
 from app.services.experiments import risk_level
 from app.state import AppState
@@ -26,6 +26,22 @@ EXPLANATION_METHOD = ("Exact interventional Shapley values on the model inputs, 
 EXPLANATION_NOTE = ("Contributions show how the model uses each input relative to the average FLEX test. They are "
                     "associations learned from NASA data, not measured effects of changing a condition. NASA varied "
                     "oxygen and suppressant together, so their separate effects cannot be isolated.")
+
+
+CONTAMINATION_NOTE = ("NASA reports that a coating on the fuel needles contaminated the droplets in these tests and "
+                      "that methanol disruptions are probably due to it (NASA/TP-2015-216046, pp. 16-17). This model "
+                      "counts disruption as sustained burning; refitted without methanol disruptions it gives the "
+                      "score shown. The gap shows how much the methanol score rests on outcomes that may be artefacts.")
+
+
+def contamination_check(state: AppState, inputs: dict, fire_risk: float) -> ContaminationCheck | None:
+    """Decision D-002: for methanol, the score from the model refitted without methanol disruptions."""
+    if inputs["fuel"] != "Methanol" or state.contamination_model is None:
+        return None
+    X = pd.DataFrame([{**inputs, "pressure_atm": 1.0}])  # pressure is not used by the no-pressure feature set
+    alt = round(100 * float(state.contamination_model.predict_proba(X)[:, 1][0]), 1)
+    return ContaminationCheck(fire_risk_without_methanol_disruptions=alt, difference=round(alt - fire_risk, 1),
+                              note=CONTAMINATION_NOTE)
 
 
 def band_evidence(state: AppState, level: RiskLevel) -> BandEvidence:
@@ -73,6 +89,12 @@ def interpret(conditions: Conditions, fire_risk: float, level: RiskLevel, p: flo
         points.append(InterpretationPoint(
             kind="suppressant", text="The model cannot separate the effect of the suppressant from the lower oxygen it "
                                      "was tested with in FLEX."))
+    c = evidence.contamination_check
+    if c is not None and abs(c.difference) >= 1:
+        points.append(InterpretationPoint(
+            kind="contamination",
+            text=f"Without the methanol disruptions that NASA links to fuel contamination, the same model gives "
+                 f"{format_risk(c.fire_risk_without_methanol_disruptions)}/100, so this methanol score is uncertain."))
     points.append(InterpretationPoint(kind="disclaimer", text="This is a model prediction, not a NASA measurement."))
     return Interpretation(text=" ".join(pt.text for pt in points), points=points)
 
@@ -93,6 +115,7 @@ def predict(state: AppState, conditions: Conditions) -> PredictResponse:
         warnings=list(res["warnings"]),
         band=band_evidence(state, level),
         nearest_experiment_ids=[int(t) for t in near["test_id"]],
+        contamination_check=contamination_check(state, inputs, fire_risk),
     )
     base, contribs = contributions(state, inputs)
     return PredictResponse(
