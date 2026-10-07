@@ -167,10 +167,16 @@ class Evidence(BaseModel):
     nearest_experiment_ids: list[int]
 
 
+class InterpretationPoint(BaseModel):
+    kind: Literal["summary", "drivers", "evidence", "extrapolation", "suppressant", "disclaimer"]
+    text: str
+
+
 class Interpretation(BaseModel):
     provenance: Provenance = Provenance.INTERPRETATION
     method: str = "Fixed template filled from the model outputs (no language model)"
-    text: str
+    text: str = Field(description="All points joined into one paragraph")
+    points: list[InterpretationPoint] = Field(description="The same text split into labelled statements")
 
 
 class PredictResponse(BaseModel):

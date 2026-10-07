@@ -104,6 +104,9 @@ def test_predict_matches_model_and_is_explained(client):
     text = p["interpretation"]["text"]
     assert "not a NASA measurement" in text and "28%" in text
     assert p["interpretation"]["provenance"] == "interpretation"
+    points = p["interpretation"]["points"]
+    assert [pt["kind"] for pt in points] == ["summary", "drivers", "evidence", "disclaimer"]
+    assert " ".join(pt["text"] for pt in points) == text
 
 
 def test_predict_flags_untested_combination(client):
@@ -113,6 +116,11 @@ def test_predict_flags_untested_combination(client):
     assert p["evidence"]["warnings"]
     assert "extrapolation" in p["interpretation"]["text"]
     assert "cannot separate the effect of the suppressant" in p["interpretation"]["text"]
+    summary = p["interpretation"]["points"][0]["text"]
+    risk = summary.split("Fire Risk ")[1].split("/100")[0]
+    assert f"a {risk}% probability" in summary                        # one rounding for score and probability
+    kinds = {pt["kind"] for pt in p["interpretation"]["points"]}
+    assert {"extrapolation", "suppressant"} <= kinds
 
 
 @pytest.mark.parametrize("bad", [

@@ -10,7 +10,7 @@ from flameguard.similarity import nearest_tests
 
 from app.schemas.common import Conditions, RiskLevel
 from app.schemas.responses import (BandEvidence, Contribution, Evidence, Explanation, Interpretation,
-                                   PredictResponse)
+                                   InterpretationPoint, PredictResponse)
 from app.services.experiments import risk_level
 from app.state import AppState
 
@@ -46,28 +46,35 @@ def contributions(state: AppState, inputs: dict) -> tuple[float, list[Contributi
 
 
 def interpret(conditions: Conditions, fire_risk: float, level: RiskLevel, p: float, base: float,
-              contribs: list[Contribution], evidence: Evidence) -> str:
+              contribs: list[Contribution], evidence: Evidence) -> Interpretation:
     fuel = "n-heptane" if conditions.fuel.value == "Heptane" else "methanol"
-    parts = [f"Fire Risk {format_risk(fire_risk)}/100 ({level.value}): the model estimates a {p:.0%} probability "
-             f"that a burning {fuel} droplet under these conditions keeps burning instead of putting itself out."]
+    points = [InterpretationPoint(
+        kind="summary",
+        # Fire Risk is 100 x P(sustained): print one rounded number for both so they never disagree (22 vs 21%).
+        text=f"Fire Risk {format_risk(fire_risk)}/100 ({level.value}): the model estimates a {format_risk(fire_risk)}% probability "
+             f"that a burning {fuel} droplet under these conditions keeps burning instead of putting itself out.")]
     movers = [c for c in contribs if c.direction != "neutral"]
     if movers:
         phrases = []
         for c in movers:
             pts = round(abs(c.impact))
             phrases.append(f"{c.label.split(' (')[0].lower()} {c.direction} it by {pts} point{'s' if pts != 1 else ''}")
-        parts.append(f"Compared with the average FLEX test ({base:.0f}/100), " + "; ".join(phrases) + ".")
+        points.append(InterpretationPoint(
+            kind="drivers", text=f"Compared with the average FLEX test ({base:.0f}/100), " + "; ".join(phrases) + "."))
     b = evidence.band
-    parts.append(f"In cross-validation, {b.observed_sustained_rate:.0%} of the {b.tests} FLEX tests the model placed "
-                 f"in the {level.value} band actually kept burning.")
+    points.append(InterpretationPoint(
+        kind="evidence", text=f"In cross-validation, {b.observed_sustained_rate:.0%} of the {b.tests} FLEX tests the "
+                              f"model placed in the {level.value} band actually kept burning."))
     if not evidence.supported_by_data or not evidence.in_tested_range:
-        parts.append("These conditions are far from any tested FLEX condition, so this estimate is an "
-                     "extrapolation and may be poorly calibrated.")
+        points.append(InterpretationPoint(
+            kind="extrapolation", text="These conditions are far from any tested FLEX condition, so this estimate is "
+                                       "an extrapolation and may be poorly calibrated."))
     if conditions.suppressant.value != "none":
-        parts.append("The model cannot separate the effect of the suppressant from the lower oxygen it was tested "
-                     "with in FLEX.")
-    parts.append("This is a model prediction, not a NASA measurement.")
-    return " ".join(parts)
+        points.append(InterpretationPoint(
+            kind="suppressant", text="The model cannot separate the effect of the suppressant from the lower oxygen it "
+                                     "was tested with in FLEX."))
+    points.append(InterpretationPoint(kind="disclaimer", text="This is a model prediction, not a NASA measurement."))
+    return Interpretation(text=" ".join(pt.text for pt in points), points=points)
 
 
 def predict(state: AppState, conditions: Conditions) -> PredictResponse:
@@ -97,7 +104,7 @@ def predict(state: AppState, conditions: Conditions) -> PredictResponse:
         evidence=evidence,
         explanation=Explanation(method=EXPLANATION_METHOD, base_value=base, contributions=contribs,
                                 note=EXPLANATION_NOTE),
-        interpretation=Interpretation(text=interpret(conditions, fire_risk, level, p, base, contribs, evidence)),
+        interpretation=interpret(conditions, fire_risk, level, p, base, contribs, evidence),
         model=state.card["metadata"]["model"],
         scope=SCOPE,
     )
