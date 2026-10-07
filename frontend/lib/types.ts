@@ -37,3 +37,4 @@ export type ConditionRank = Schemas["ConditionRank"];
 export type SeriesEstimate = Schemas["SeriesEstimate"];
 export type SeriesComparison = Schemas["SeriesComparison"];
 export type SuppressantObservation = Schemas["ObservedPoint"];
+export type SimilarItem = Schemas["SimilarItem"];
