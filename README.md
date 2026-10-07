@@ -1,3 +1,15 @@
+---
+# Hugging Face Spaces configuration (used only when this repository is pushed to a Space; see docs/deployment.md)
+title: FlameGuard AI API
+emoji: 🔥
+colorFrom: yellow
+colorTo: blue
+sdk: docker
+app_port: 8000
+pinned: false
+short_description: NASA FLEX microgravity fire-safety API
+---
+
 # FlameGuard AI
 
 AI-powered fire safety intelligence from NASA microgravity combustion experiments.
@@ -58,6 +70,7 @@ pip install -r requirements.txt
 pip install -e .                   # the flameguard library (used by the API)
 python -m uvicorn app.main:app --app-dir backend --reload --port 8000   # API + docs at http://localhost:8000/docs
 python -m pytest                   # library + API tests
+cd frontend && npm install && npm run dev   # website at http://localhost:3000 (npm test: unit tests)
 ```
 
 Optional: for generated answers in Ask FlameGuard, copy `backend/.env.example` to `backend/.env` and add a free
@@ -76,6 +89,12 @@ python scripts/explain_model.py        # SHAP explanations -> reports/phase10/
 python scripts/suppressant_analysis.py # O2-50 per test series -> reports/phase12/
 python scripts/build_knowledge.py      # Ask FlameGuard passages + embeddings -> data/knowledge/
 ```
+
+## Deploy
+
+API on Hugging Face Spaces (free Docker hosting), website on Vercel: step-by-step in
+[docs/deployment.md](docs/deployment.md). Every push runs the test suite and the frontend build in GitHub Actions
+(`.github/workflows/ci.yml`).
 
 ## Layout
 
