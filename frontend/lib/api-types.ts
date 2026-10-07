@@ -613,6 +613,24 @@ export interface components {
              * @default Fixed template filled from the model outputs (no language model)
              */
             method: string;
+            /**
+             * Text
+             * @description All points joined into one paragraph
+             */
+            text: string;
+            /**
+             * Points
+             * @description The same text split into labelled statements
+             */
+            points: components["schemas"]["InterpretationPoint"][];
+        };
+        /** InterpretationPoint */
+        InterpretationPoint: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "summary" | "drivers" | "evidence" | "extrapolation" | "suppressant" | "disclaimer";
             /** Text */
             text: string;
         };

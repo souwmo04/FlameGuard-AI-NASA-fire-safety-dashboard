@@ -1653,14 +1653,50 @@
           },
           "text": {
             "type": "string",
+            "title": "Text",
+            "description": "All points joined into one paragraph"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/InterpretationPoint"
+            },
+            "type": "array",
+            "title": "Points",
+            "description": "The same text split into labelled statements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "points"
+        ],
+        "title": "Interpretation"
+      },
+      "InterpretationPoint": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "drivers",
+              "evidence",
+              "extrapolation",
+              "suppressant",
+              "disclaimer"
+            ],
+            "title": "Kind"
+          },
+          "text": {
+            "type": "string",
             "title": "Text"
           }
         },
         "type": "object",
         "required": [
+          "kind",
           "text"
         ],
-        "title": "Interpretation"
+        "title": "InterpretationPoint"
       },
       "MetricWithInterval": {
         "properties": {

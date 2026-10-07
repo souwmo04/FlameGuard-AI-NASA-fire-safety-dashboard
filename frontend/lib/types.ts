@@ -24,6 +24,8 @@ export type ExperimentList = Schemas["ExperimentList"];
 
 export type PredictResponse = Schemas["PredictResponse"];
 export type Contribution = Schemas["Contribution"];
+export type Explanation = Schemas["Explanation"];
+export type InterpretationPoint = Schemas["InterpretationPoint"];
 export type WhatIfResponse = Schemas["WhatIfResponse"];
 export type RankingResponse = Schemas["RankingResponse"];
 export type ConditionRankingResponse = Schemas["ConditionRankingResponse"];
