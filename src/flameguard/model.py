@@ -25,7 +25,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV, StratifiedGroupKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from xgboost import XGBClassifier
 
 from flameguard.features import FEATURE_SETS, make_preprocessor, monotone_constraints
 
@@ -69,6 +68,8 @@ def random_forest(feature_set: str = "base", impute: bool = False) -> Pipeline:
 
 def xgboost(feature_set: str = "base", impute: bool = False) -> Pipeline:
     """Shallow, slowly-learning gradient boosting with a monotone-increasing O2 constraint."""
+    from xgboost import XGBClassifier  # research dependency only; the deployed API never builds this model
+
     names = list(FEATURE_SETS[feature_set])
     if impute:
         names.append("missingindicator_d0_mm")

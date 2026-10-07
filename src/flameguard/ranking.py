@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from flameguard.eda import wilson_interval
+from flameguard.stats import wilson_interval
 
 IN_SCOPE = ("0.7atm", "1atm")
 

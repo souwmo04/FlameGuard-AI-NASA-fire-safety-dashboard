@@ -31,7 +31,7 @@ from sklearn.metrics import (average_precision_score, brier_score_loss, log_loss
                              roc_auc_score)
 
 from flameguard.dataset import build_modeling_data  # noqa: E402
-from flameguard.eda import wilson_interval  # noqa: E402
+from flameguard.stats import wilson_interval  # noqa: E402
 from flameguard.evaluation import choose_threshold, threshold_metrics  # noqa: E402
 from flameguard.model import FINAL_FEATURE_SET, logreg  # noqa: E402
 from flameguard.prediction import ApplicabilityDomain, FinalModel, RiskBands  # noqa: E402
