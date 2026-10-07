@@ -1,6 +1,7 @@
 "use client";
 
-import { Info, Loader2, Radar, RefreshCw, Zap } from "lucide-react";
+import { ArrowUpRight, Info, Loader2, Radar, RefreshCw, Zap } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
@@ -17,7 +18,7 @@ import { api, endpoints, type ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { describeConditions } from "@/lib/conditions";
 import { REFERENCE_SCENARIO, saveLastAnalysis } from "@/lib/last-analysis";
-import { conditionsFromQuery } from "@/lib/scenario-url";
+import { conditionsFromQuery, conditionsToQuery } from "@/lib/scenario-url";
 import type { Conditions, DomainResponse, Fuel, ModelInfoResponse, SimilarResponse, StatsResponse } from "@/lib/types";
 
 import { ContributionWaterfall } from "./contribution-waterfall";
@@ -186,6 +187,11 @@ export function FireRiskAnalyzer() {
           provenance="observed"
           description="Real ISS results closest to these conditions — check the prediction against the evidence."
           delay={0.05}
+          actions={
+            <Link href={`/similar?${conditionsToQuery(submitted)}`} className="inline-flex items-center gap-1 text-xs text-plasma hover:underline">
+              Explore more similar tests<ArrowUpRight className="size-3.5" aria-hidden="true" />
+            </Link>
+          }
         >
           {similar.error ? (
             <ErrorState message={similar.error.message} />
